@@ -1,0 +1,196 @@
+<div class="page">
+  <div class="bg-dots"></div>
+  <div class="bg-ring"></div>
+  <div class="bg-ring2"></div>
+  <div class="bg-leaf bl1">
+    <svg width="280" height="280" viewBox="0 0 200 200" fill="none">
+      <path d="M100 10 Q180 40 170 120 Q140 180 60 170 Q10 130 20 60 Q50 10 100 10Z" fill="#16a34a"/>
+      <path d="M100 10 Q100 90 60 170" stroke="white" stroke-width="1.5" fill="none"/>
+      <path d="M100 40 Q145 60 155 90" stroke="white" stroke-width="1" fill="none"/>
+      <path d="M90 75 Q60 90 55 120" stroke="white" stroke-width="1" fill="none"/>
+    </svg>
+  </div>
+  <div class="bg-leaf bl2">
+    <svg width="220" height="220" viewBox="0 0 200 200" fill="none">
+      <path d="M100 10 Q180 40 170 120 Q140 180 60 170 Q10 130 20 60 Q50 10 100 10Z" fill="#15803d"/>
+    </svg>
+  </div>
+
+  <div class="card">
+
+    <!-- ── TOP BAR ── -->
+    <div class="card-top">
+      <div class="ct-brand">
+        <div class="ct-logo">
+          <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="13" fill="rgba(255,255,255,.2)"/>
+            <path d="M16 7c-5 0-9 4-9 9 0 3 1.4 5.5 3.5 7L16 26l5.5-3A9 9 0 0 0 25 16c0-5-4-9-9-9z" fill="white"/>
+            <circle cx="16" cy="16" r="2.8" fill="#16a34a"/>
+          </svg>
+        </div>
+        <span class="ct-name">NutriCare</span>
+      </div>
+      <div class="ct-title">Réserver une <em>séance</em></div>
+      <div class="ct-sub">Cabinet Dr. Sarah Benali · Nutritionniste Diététicienne</div>
+    </div>
+
+    <!-- ── BODY ── -->
+    <div class="card-body">
+
+      <form (ngSubmit)="prendreRdv()" #rdvForm="ngForm" class="form" autocomplete="off">
+
+        <!-- ─── SECTION 01 — Identité ─── -->
+        <div class="fsec">
+          <div class="slbl"><span class="snum">01</span> Vos informations</div>
+
+          <div class="frow">
+            <!-- Nom -->
+            <div class="fg">
+              <label class="flbl">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+                Nom
+              </label>
+              <input type="text" [(ngModel)]="nom" name="nom" placeholder="Ex : Mansouri" required />
+              <div class="fline"></div>
+              <div class="fcheck" *ngIf="nom">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Prénom -->
+            <div class="fg">
+              <label class="flbl">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+                Prénom
+              </label>
+              <input type="text" [(ngModel)]="prenom" name="prenom" placeholder="Ex : Amira" required />
+              <div class="fline"></div>
+              <div class="fcheck" *ngIf="prenom">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="fg">
+            <label class="flbl">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              Adresse email
+            </label>
+            <input type="email" [(ngModel)]="email" name="email" placeholder="votre@email.com" required />
+            <div class="fline"></div>
+            <div class="fcheck" *ngIf="email">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── SECTION 02 — Créneau ─── -->
+        <div class="fsec">
+          <div class="slbl"><span class="snum">02</span> Choisissez un créneau</div>
+
+          <!-- Date -->
+          <div class="fg">
+            <label class="flbl">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8"  y1="2" x2="8"  y2="6"/>
+                <line x1="3"  y1="10" x2="21" y2="10"/>
+              </svg>
+              Date du rendez-vous
+            </label>
+            <input type="date" [(ngModel)]="date" name="date" required (change)="chargerHeures()" />
+            <div class="fline"></div>
+          </div>
+
+          <!-- Créneaux déjà réservés -->
+          <div class="hp" *ngIf="heuresPrises.length > 0">
+            <div class="hph">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8"  x2="12"    y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Créneaux déjà réservés pour cette date :
+            </div>
+            <div class="hptags">
+              <span class="hpt" *ngFor="let h of heuresPrises">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6"  x2="6"  y2="18"/>
+                  <line x1="6"  y1="6"  x2="18" y2="18"/>
+                </svg>
+                {{ h }}
+              </span>
+            </div>
+          </div>
+
+          <div class="hpok" *ngIf="date && heuresPrises.length === 0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Tous les créneaux sont libres pour cette date
+          </div>
+
+          <!-- ✅ Heure — Select corrigé -->
+          <div class="fg">
+            <label class="flbl">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Heure souhaitée
+            </label>
+            <select [(ngModel)]="hrdv" name="hrdv" required>
+              <option value="">-- Choisir une heure --</option>
+              <option *ngFor="let h of toutesHeures"
+                      [value]="h"
+                      [disabled]="estReservee(h)"
+                      [class.reservee]="estReservee(h)">
+                {{ h }} {{ estReservee(h) ? '❌' : '✅' }}
+              </option>
+            </select>
+            <div class="fline"></div>
+          </div>
+
+        </div>
+
+        <!-- ─── SUBMIT ─── -->
+        <button type="submit" class="sbtn" [disabled]="rdvForm.invalid">
+          <div class="sbtn-in">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8"  y1="2" x2="8"  y2="6"/>
+              <line x1="3"  y1="10" x2="21" y2="10"/>
+            </svg>
+            Confirmer le rendez-vous
+          </div>
+          <div class="shine"></div>
+        </button>
+
+        <p class="legal">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Données protégées · Rappel SMS 24h avant · Cabinet Dr. Benali
+        </p>
+
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,334 @@
+<div class="page-wrapper">
+
+  <!-- ================================================
+       MAIN
+       ================================================ -->
+  <main class="main">
+
+    <!-- En-tête -->
+    <div class="top-header">
+      <div>
+        <div class="page-title">Gestion <span>Patients</span></div>
+        <div class="page-sub">NutriCare · Tableau de bord</div>
+      </div>
+      <div class="top-actions">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Rechercher un patient…"
+            [(ngModel)]="chercher"
+            (input)="filterPatients()"
+          />
+        </div>
+        <button class="btn-add" (click)="openForm()">＋ Ajouter patient</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-strip">
+      <div class="stat-card">
+        <div class="stat-icon green">👥</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ fifi.length || 0 }}</div>
+          <div class="stat-label">Patients actifs</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon rose">♀</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ countBySexe('femme') }}</div>
+          <div class="stat-label">Femmes</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">♂</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ countBySexe('homme') }}</div>
+          <div class="stat-label">Hommes</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon gold">🎯</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ countWithObjectif() }}</div>
+          <div class="stat-label">Objectifs actifs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grille patients (résultats de recherche) -->
+    <div class="section-label">Tous les patients</div>
+
+    <div class="patients-grid" *ngIf="affiche && patients.length">
+      <div class="patient-card" *ngFor="let p of patients">
+        <div class="card-band" [ngClass]="p.sexe === 'Femme' ? 'band-f' : 'band-m'"></div>
+        <div class="card-inner">
+          <div class="card-top">
+            <div class="avatar-wrap">
+              <div class="avatar" [ngClass]="p.sexe === 'Femme' ? 'avatar-f' : 'avatar-m'">
+                {{ p.prenom?.[0] }}{{ p.nom?.[0] }}
+              </div>
+              <div>
+                <div class="patient-name">{{ p.prenom }} {{ p.nom }}</div>
+                <div class="patient-email">{{ p.email }}</div>
+              </div>
+            </div>
+            <div class="gender-badge">{{ p.sexe === 'Femme' ? '♀️' : '♂️' }}</div>
+          </div>
+
+          <div class="card-stats">
+            <div class="cs-item">
+              <div class="cs-val">{{ p.age }}</div>
+              <div class="cs-key">Âge</div>
+            </div>
+            <div class="cs-item">
+              <div class="cs-val">{{ p.poids_actuiele }} kg</div>
+              <div class="cs-key">Poids</div>
+            </div>
+            <div class="cs-item">
+              <div class="cs-val">{{ calcIMC(p.poids_actuiele, p.Taille) }}</div>
+              <div class="cs-key">IMC</div>
+            </div>
+          </div>
+
+          <div class="card-tags">
+            <span class="tag tag-obj">🎯 {{ p.objectif }}</span>
+            <span class="tag tag-act">⚡ {{ p.niveau_act }}</span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="card-contact">📞 {{ p.tel }}</div>
+          <div class="card-actions">
+            <div class="icon-btn" title="Voir profil">👁</div>
+            <div class="icon-btn" title="Modifier">✏️</div>
+            <div class="icon-btn" title="Plan nutritionnel">🥗</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- État vide -->
+    <div class="empty-state" *ngIf="affiche && !patients.length">
+      Aucun patient trouvé 🌿
+    </div>
+
+    <!-- Liste dépliable (fifi) -->
+    <div class="patients-container">
+      <div class="cards-container">
+
+        <div class="card"
+             *ngFor="let p of fifi; let i = index"
+             (click)="toggleCard(i)"
+             [class.active]="selectedIndex === i">
+
+          <!-- Header -->
+          <div class="card-header">
+            <div class="avatar">
+              {{ p.prenom?.[0] }}{{ p.nom?.[0] }}
+            </div>
+            <div class="info">
+              <h3>{{ p.prenom }} {{ p.nom }}</h3>
+              <span class="badge">{{ p.genre }}</span>
+            </div>
+          </div>
+
+          <!-- Infos principales -->
+          <div class="card-body">
+            <div class="info-row">
+              <span>🪪 ID</span>
+              <strong>{{ p.id }}</strong>
+            </div>
+            <div class="info-row">
+              <span>🎂 Âge</span>
+              <strong>{{ p.age }}</strong>
+            </div>
+            <div class="info-row">
+              <span>🎯 Objectif</span>
+              <strong>{{ p.objectif }}</strong>
+            </div>
+            <div class="info-row">
+              <span>📏 Taille</span>
+              <strong>{{ p.taille }} cm</strong>
+            </div>
+            <div class="info-row">
+              <span>⚖️ Poids</span>
+              <strong>{{ p.poids_actuiele }} kg</strong>
+            </div>
+          </div>
+
+          <!-- Détails (accordéon) -->
+          <div class="details" *ngIf="selectedIndex === i">
+            <div class="details-grid">
+              <div><span>📝 Description</span><p>{{ p.description }}</p></div>
+              <div><span>📧 Email</span><p>{{ p.email }}</p></div>
+              <div><span>📞 Tél</span><p>{{ p.tel }}</p></div>
+              <div><span>📍 Adresse</span><p>{{ p.adresse }}</p></div>
+              <div><span>⚠️ Allergies</span><p>{{ p.allergies }}</p></div>
+              <div><span>🏥 Conditions</span><p>{{ p.condition_med }}</p></div>
+              <div><span>🏃 Activité</span><p>{{ p.niveau_act }}</p></div>
+            </div>
+                 <div class="card-actions">
+                    <button class="but" (click)="suppprimer(p.id)">Supprimer</button>
+                    <button class="acc" (click)="acces(p.email)">Donner l'accès</button>
+            </div></div>
+
+      </div>
+    </div>
+  </div>
+  </main>
+
+  <!-- Feuille décorative -->
+  <svg class="deco-leaf" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 10 C150 10,190 50,190 100 C190 150,150 190,100 190 C50 190,10 150,10 100 C10 50,50 10,100 10Z" fill="#2d6a4f"/>
+    <path d="M100 10 L100 190" stroke="#1a3a2a" stroke-width="3"/>
+    <path d="M100 60 C120 70,150 80,170 90"    stroke="#1a3a2a" stroke-width="2"/>
+    <path d="M100 90 C120 100,145 105,165 115"  stroke="#1a3a2a" stroke-width="2"/>
+    <path d="M100 60 C80 70,50 80,30 90"        stroke="#1a3a2a" stroke-width="2"/>
+    <path d="M100 90 C80 100,55 105,35 115"     stroke="#1a3a2a" stroke-width="2"/>
+  </svg>
+
+</div>
+
+<!-- ================================================
+     MODAL — Nouveau patient
+     ================================================ -->
+<div class="modal-overlay" [class.open]="showForm" (click)="onOverlayClick($event)">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div class="modal-title">🌿 Nouveau Patient</div>
+      <div class="modal-close" (click)="closeForm()">✕</div>
+    </div>
+
+    <!-- Onglets -->
+    <div class="modal-tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'info'"     (click)="activeTab = 'info'">🧑 Infos personnelles</button>
+      <button class="tab-btn" [class.active]="activeTab === 'sante'"    (click)="activeTab = 'sante'">❤️ Santé</button>
+      <button class="tab-btn" [class.active]="activeTab === 'activite'" (click)="activeTab = 'activite'">🏃 Activité</button>
+    </div>
+
+    <form #f="ngForm">
+      <div class="modal-body">
+
+        <!-- Onglet Infos personnelles -->
+        <div class="form-section" [class.active]="activeTab === 'info'">
+          <h3>Informations personnelles</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Nom</label>
+              <input type="text" name="nom" [(ngModel)]="nom" placeholder="ex: Ben Ali">
+            </div>
+            <div class="form-group">
+              <label>Prénom</label>
+              <input type="text" name="prenom" [(ngModel)]="prenom" placeholder="ex: Sara">
+            </div>
+            <div class="form-group">
+              <label>Âge</label>
+              <input type="number" name="age" [(ngModel)]="age" placeholder="32" min="1" max="120">
+            </div>
+            <div class="form-group">
+              <label>Sexe</label>
+              <select name="sexe" [(ngModel)]="sexe">
+                <option value="" disabled selected>Choisir</option>
+                <option value="Femme">Femme</option>
+                <option value="Homme">Homme</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" name="email" [(ngModel)]="email"     placeholder="email@exemple.com">
+            </div>
+            <div class="form-group">
+              <label>Mot de passe</label>
+              <input type="text" name="password" [(ngModel)]="password" placeholder="créer votre mot de passe">
+            </div>
+            <div class="form-group">
+              <label>Téléphone</label>
+              <input type="tel" name="tel" [(ngModel)]="tel" placeholder="+216 XX XXX XXX">
+            </div>
+            <div class="form-group full">
+              <label>Adresse</label>
+              <input type="text" name="adress" [(ngModel)]="adress" placeholder="Rue, Ville">
+            </div>
+            <div class="form-group full">
+              <label>Note interne</label>
+              <textarea name="note_interne" [(ngModel)]="note_interne" placeholder="Observations, remarques…"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeForm()">Annuler</button>
+            <button type="button" class="btn-save"   (click)="activeTab = 'sante'">Suivant →</button>
+          </div>
+        </div>
+
+        <!-- Onglet Santé -->
+        <div class="form-section" [class.active]="activeTab === 'sante'">
+          <h3>Données de santé</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Taille (cm)</label>
+              <input type="number" name="Taille" [(ngModel)]="Taille" placeholder="170">
+            </div>
+            <div class="form-group">
+              <label>Poids actuel (kg)</label>
+              <input type="number" name="poids_actuiele" [(ngModel)]="poids_actuiele" placeholder="65">
+            </div>
+            <div class="form-group full">
+              <label>Allergies alimentaires</label>
+              <input type="text" name="Allergie" [(ngModel)]="Allergie" placeholder="Arachides, lactose…">
+            </div>
+            <div class="form-group full">
+              <label>Conditions médicales</label>
+              <textarea name="Conditions_me" [(ngModel)]="Conditions_me" placeholder="Diabète, hypertension…"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeForm()">Annuler</button>
+            <button type="button" class="btn-save"   (click)="activeTab = 'activite'">Suivant →</button>
+          </div>
+        </div>
+
+        <!-- Onglet Activité -->
+        <div class="form-section" [class.active]="activeTab === 'activite'">
+          <h3>Activité &amp; Objectif</h3>
+          <div class="form-grid">
+            <div class="act-grid">
+              <div class="act-card"
+                   *ngFor="let n of niveaux"
+                   [class.selected]="niveau_act === n.val"
+                   (click)="niveau_act = n.val">
+                <div class="act-icon">{{ n.icon }}</div>
+                <div class="act-label">{{ n.val }}</div>
+                <div class="act-desc">{{ n.desc }}</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Objectif nutritionnel</label>
+              <select name="objectif" [(ngModel)]="objectif">
+                <option value="" disabled selected>Choisir</option>
+                <option>Perte de poids</option>
+                <option>Prise de masse</option>
+                <option>Maintien</option>
+                <option>Santé cardio</option>
+                <option>Performance</option>
+                <option>Pathologie</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>Description / Plan</label>
+              <textarea name="description" [(ngModel)]="description" placeholder="Détails du programme, préférences alimentaires…"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeForm()">Annuler</button>
+            <button type="button" class="btn-save"   (click)="ajouterP(f)">💾 Enregistrer</button>
+          </div>
+        </div>
+
+      </div><!-- /.modal-body -->
+    </form>
+
+  </div><!-- /.modal-box -->
+</div><!-- /.modal-overlay -->

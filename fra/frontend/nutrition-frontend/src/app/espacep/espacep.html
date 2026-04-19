@@ -1,0 +1,58 @@
+<div class="layout">
+  <aside class="sidebar">
+
+    <div class="sidebar-logo">
+      <div class="logo-icon">P</div>
+      <span class="logo-text">{{nom}} {{prenom}}</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <p class="nav-section-label">MENU</p>
+
+    
+      <a  class="nav-item" routerLink="/escpacep/rdvp" routerLinkActive="active">
+        <span class="nav-icon">
+          📅
+        </span>
+        <span class="nav-label">prendre rdv</span>
+      </a>
+         
+      <a class="nav-item" routerLink="/patient/profil" routerLinkActive="active">
+        <span class="nav-icon">
+          👤
+        </span>
+        <span class="nav-label">Mon profil</span>
+      </a>
+
+      <a class="nav-item" routerLink="/patient/contact" routerLinkActive="active">
+        <span class="nav-icon">
+          ✉️
+        </span>
+        <span class="nav-label">Contact nutritionniste</span>
+      </a>
+
+    </nav>
+
+
+    <div class="sidebar-footer">
+
+      <div class="user-card">
+        <div class="user-avatar">P</div>
+        <div class="user-info">
+          <p class="user-name">{{nom}} {{prenom}}</p>
+          <p class="user-role">Espace personnel</p>
+        </div>
+      </div>
+
+      <a class="logout-btn" routerLink="/login">
+        🚪 Déconnexion
+      </a>
+
+    </div>
+
+  </aside>
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

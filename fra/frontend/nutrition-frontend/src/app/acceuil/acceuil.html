@@ -1,0 +1,179 @@
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-badge">🌿 Cabinet de Nutrition — Dr. Farouk Mrad</div>
+    <h1>Votre santé, suivie avec <em>précision et bienveillance</em></h1>
+    <p class="hero-desc">
+      Le Dr. Farouk Mrad vous accompagne dans votre parcours nutritionnel.
+      Suivi personnalisé, plans alimentaires sur mesure et résultats mesurables — tout en un seul espace.
+    </p>
+    <div class="hero-actions">
+      <a routerLink="/login" class="btn-primary">Accéder à mon espace</a>
+      <a class="btn-secondary" (click)="scrollTo('services')">Découvrir le cabinet →</a>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="hero-card">
+      <div class="macro-ring">
+        <div class="macro-center">
+          <div class="kcal">1 850</div>
+          <div class="kcal-label">kcal / jour</div>
+        </div>
+      </div>
+      <div class="macro-list">
+        <div class="macro-item">
+          <span class="dot green"></span>
+          <span class="macro-name">Glucides</span>
+          <div class="bar-wrap"><div class="bar" style="width:60%;background:var(--green-fresh)"></div></div>
+          <span class="macro-val">220g</span>
+        </div>
+        <div class="macro-item">
+          <span class="dot gold"></span>
+          <span class="macro-name">Protéines</span>
+          <div class="bar-wrap"><div class="bar" style="width:25%;background:var(--gold)"></div></div>
+          <span class="macro-val">92g</span>
+        </div>
+        <div class="macro-item">
+          <span class="dot light"></span>
+          <span class="macro-name">Lipides</span>
+          <div class="bar-wrap"><div class="bar" style="width:15%;background:var(--green-light)"></div></div>
+          <span class="macro-val">55g</span>
+        </div>
+      </div>
+    </div>
+    <div class="chip chip-1">📋 Suivi en temps réel</div>
+    <div class="chip chip-2">⚡ Résultats mesurables</div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat" *ngFor="let s of stats">
+    <span class="stat-num">{{ s.num }}</span>
+    <span class="stat-label">{{ s.label }}</span>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services" class="section services-section">
+  <div #reveal class="reveal section-header">
+    <span class="section-tag">Ce que nous faisons</span>
+    <h2 class="section-title">Un suivi complet<br>pour chaque patient</h2>
+    <p class="section-sub">Le Dr. Farouk Mrad utilise une plateforme digitale moderne pour assurer un suivi rigoureux, personnalisé et efficace de chaque patient.</p>
+  </div>
+  <div class="services-grid">
+    <div #reveal class="reveal service-card"
+         *ngFor="let s of services; let i = index"
+         [style.transition-delay]="(i * 0.1) + 's'">
+      <div class="service-icon">{{ s.icon }}</div>
+      <h3 class="service-title">{{ s.title }}</h3>
+      <p class="service-desc">{{ s.desc }}</p>
+    </div>
+  </div>
+</section>
+
+<!-- COMMENT CA MARCHE -->
+<section class="how-section">
+  <div #reveal class="reveal how-header">
+    <span class="section-tag">Comment ça marche</span>
+    <h2 class="section-title">Votre parcours patient<br>en 3 étapes simples</h2>
+  </div>
+  <div class="steps-grid">
+    <div #reveal class="reveal step-card" *ngFor="let step of steps; let i = index"
+         [style.transition-delay]="(i * 0.15) + 's'">
+      <div class="step-number">0{{ i + 1 }}</div>
+      <div class="step-icon">{{ step.icon }}</div>
+      <h3 class="step-title">{{ step.title }}</h3>
+      <p class="step-desc">{{ step.desc }}</p>
+    </div>
+  </div>
+</section>
+
+<!-- TEMOIGNAGES -->
+<section id="temoignages" class="section testi-section">
+  <div #reveal class="reveal section-header">
+    <span class="section-tag">Témoignages patients</span>
+    <h2 class="section-title">Ils ont transformé<br>leur santé</h2>
+  </div>
+  <div class="testi-grid">
+    <div #reveal class="reveal testi-card"
+         *ngFor="let t of testimonials; let i = index"
+         [style.transition-delay]="(i * 0.12) + 's'">
+      <div class="stars">{{ getStars(t.stars).join('') }}</div>
+      <p class="testi-text">"{{ t.text }}"</p>
+      <div class="testi-author">
+        <div class="avatar" [style.background]="t.bg">{{ t.emoji }}</div>
+        <div>
+          <div class="author-name">{{ t.name }}</div>
+          <div class="author-role">{{ t.role }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT & LOCALISATION -->
+<section id="contact" class="contact-section">
+  <div #reveal class="reveal contact-left">
+    <span class="section-tag">Nous trouver</span>
+    <h2 class="section-title">Cabinet du<br>Dr. Farouk Mrad</h2>
+    <p class="section-sub">Prenez rendez-vous directement au cabinet ou contactez-nous pour toute question concernant votre suivi nutritionnel.</p>
+
+    <div class="contact-infos">
+      <div class="contact-item">
+        <div class="contact-icon">📍</div>
+        <div class="contact-detail">
+          <strong>Adresse</strong>
+          <span>15 Avenue Habib Bourguiba, Tunis 1001</span>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">📞</div>
+        <div class="contact-detail">
+          <strong>Téléphone</strong>
+          <span>+216 71 000 000</span>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">📧</div>
+        <div class="contact-detail">
+          <strong>Email</strong>
+          <span>dr.farouk.mrad&#64;cabinet.tn</span>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">🕐</div>
+        <div class="contact-detail">
+          <strong>Horaires</strong>
+          <span>Lun – Sam · 8h00 – 18h00</span>
+        </div>
+      </div>
+    </div>
+
+    <a routerLink="/login" class="btn-primary btn-contact-cta">
+      Accéder à mon espace patient
+    </a>
+  </div>
+
+  <div #reveal class="reveal contact-right">
+    <div class="map-placeholder">
+      <div class="map-visual">
+        <div class="map-pin-big">📍</div>
+        <div class="map-rings">
+          <div class="ring ring-1"></div>
+          <div class="ring ring-2"></div>
+          <div class="ring ring-3"></div>
+        </div>
+      </div>
+      <div class="map-info">
+        <strong>Cabinet Dr. Farouk Mrad</strong>
+        <span>15 Avenue Habib Bourguiba, Tunis</span>
+      </div>
+      <a href="https://maps.google.com/?q=Avenue+Habib+Bourguiba+Tunis"
+         target="_blank" class="map-btn">
+        Ouvrir dans Google Maps →
+      </a>
+    </div>
+  </div>
+</section>

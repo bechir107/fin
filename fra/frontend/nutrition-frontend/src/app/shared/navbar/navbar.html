@@ -1,0 +1,15 @@
+<nav [class.scrolled]="scrolled">
+  <a class="logo" routerLink="/">Dr. Farouk <span>Mrad</span></a>
+
+  <ul class="nav-links" [class.open]="menuOpen">
+    <li><a routerLink="/"            routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" (click)="closeMenu()">Accueil</a></li>
+    <li><a (click)="scrollAndClose('services')"  class="scroll-link">Services</a></li>
+    <li><a (click)="scrollAndClose('temoignages')" class="scroll-link">Témoignages</a></li>
+    <li><a (click)="scrollAndClose('contact')"   class="scroll-link">Contact</a></li>
+    <li><a routerLink="/login" class="nav-cta" (click)="closeMenu()">Mon espace patient</a></li>
+  </ul>
+
+  <button class="hamburger" (click)="menuOpen = !menuOpen" [class.open]="menuOpen" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>

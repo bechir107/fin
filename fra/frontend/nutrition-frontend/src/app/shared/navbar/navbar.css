@@ -1,0 +1,144 @@
+/* ── NAVBAR ─────────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+  padding: 20px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(248, 244, 237, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(76, 175, 111, 0.12);
+  transition: all 0.3s ease;
+}
+
+nav.scrolled {
+  padding: 14px 60px;
+  box-shadow: 0 4px 28px rgba(26, 61, 43, 0.1);
+}
+
+/* LOGO */
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.55rem;
+  color: var(--green-deep);
+  letter-spacing: -0.4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.logo span {
+  color: var(--green-fresh);
+}
+
+/* LINKS */
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+  align-items: center;
+}
+
+.nav-links a {
+  font-size: 0.87rem;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  color: var(--text-mid);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--green-fresh);
+}
+
+.nav-links a.nav-cta {
+  background: var(--green-deep);
+  color: var(--white) !important;
+  padding: 10px 22px;
+  border-radius: 50px;
+  text-transform: none;
+  transition: background 0.2s !important;
+}
+
+.nav-links a.nav-cta:hover {
+  background: var(--green-fresh) !important;
+}
+
+/* HAMBURGER */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--green-deep);
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+
+.hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.hamburger.open span:nth-child(2) { opacity: 0; transform: translateX(-8px); }
+.hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+/* ── RESPONSIVE ─────────────────────────────── */
+@media (max-width: 900px) {
+  nav,
+  nav.scrolled {
+    padding: 16px 24px;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background: rgba(248, 244, 237, 0.98);
+    backdrop-filter: blur(16px);
+    flex-direction: column;
+    gap: 0;
+    align-items: stretch;
+    padding: 16px 0 24px;
+    transform: translateY(-110%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    border-bottom: 1px solid var(--cream-dark);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  .nav-links.open {
+    transform: translateY(0);
+  }
+
+  .nav-links li a {
+    display: block;
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--cream-dark);
+    text-transform: none;
+    font-size: 0.95rem;
+  }
+
+  .nav-links a.nav-cta {
+    display: block;
+    margin: 20px 24px 4px;
+    border-radius: 50px;
+    text-align: center;
+    padding: 12px 22px;
+  }
+}

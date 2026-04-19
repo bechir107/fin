@@ -1,0 +1,118 @@
+<div class="login-page">
+
+  <!-- LEFT PANEL -->
+  <div class="login-left">
+    <div class="left-content">
+      <a routerLink="/" class="back-link">← Retour à l'accueil</a>
+
+      <div class="brand">
+        <div class="brand-logo">Dr. Farouk <span>Mrad</span></div>
+        <p class="brand-sub">Cabinet de Nutrition & Diététique</p>
+      </div>
+
+      <div class="welcome-text">
+        <h1>Bon retour<br><em>parmi nous</em> 👋</h1>
+        <p>Accédez à votre espace personnel pour consulter votre programme alimentaire, votre suivi de poids et vos résultats.</p>
+      </div>
+
+      <div class="features">
+        <div class="feature-item" *ngFor="let f of features">
+          <div class="feature-icon">{{ f.icon }}</div>
+          <span>{{ f.label }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decorative circles -->
+    <div class="deco-circle deco-1"></div>
+    <div class="deco-circle deco-2"></div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="login-right">
+    <div class="login-card">
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab" [class.active]="activeTab === 'patient'" (click)="activeTab = 'patient'">
+          👤 Patient
+        </button>
+        <button class="tab" [class.active]="activeTab === 'nutritionniste'" (click)="activeTab = 'nutritionniste'">
+          🩺 Nutritionniste
+        </button>
+      </div>
+
+      <!-- FORM -->
+      <div class="form-header">
+        <h2>{{ activeTab === 'patient' ? 'Espace patient' : 'Espace professionnel' }}</h2>
+        <p>{{ activeTab === 'patient' ? 'Consultez votre suivi et votre régime' : 'Gérez vos patients et dossiers' }}</p>
+      </div>
+          
+      <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+        <div class="field">
+          <label>{{ activeTab === 'patient' ? 'Email ou identifiant' : 'Email professionnel' }}</label>
+          <div class="input-wrap">
+            <span class="input-icon">📧</span>
+            <input
+              type="email"
+              [(ngModel)]="email"
+              name="email"
+              placeholder="{{ activeTab === 'patient' ? 'votre@email.com' : 'dr.mrad@cabinet.tn' }}"
+              required
+              autocomplete="email"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Mot de passe</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              [(ngModel)]="password"
+              name="password"
+              placeholder="••••••••"
+              required
+              autocomplete="current-password"
+            />
+            <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
+              {{ showPassword ? '🙈' : '👁️' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label class="remember">
+            <input type="checkbox" [(ngModel)]="rememberMe" name="remember" />
+            <span>Se souvenir de moi</span>
+          </label>
+          <a href="#" class="forgot">Mot de passe oublié ?</a>
+        </div>
+
+        <!-- ERROR -->
+        <div class="error-msg" *ngIf="errorMsg">
+          ⚠️ {{ errorMsg }}
+        </div>
+
+        <button type="submit" class="btn-login" [disabled]="loading || !loginForm.valid">
+          <span *ngIf="!loading">
+            {{ activeTab === 'patient' ? 'Accéder à mon espace' : 'Se connecter' }}
+          </span>
+          <span *ngIf="loading" class="loading-dots">
+            <span></span><span></span><span></span>
+          </span>
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <p>Vous êtes un nouveau patient ?<br>
+          <span>Contactez le cabinet pour créer votre compte.</span>
+        </p>
+        <a routerLink="/" fragment="contact" class="contact-link">📍 Contacter le cabinet →</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
