@@ -1,0 +1,127 @@
+<div class="login-page">
+  <div class="card-center" style="max-width: 600px;">
+    <div class="form-container">
+
+      <div class="form-top">
+        <a routerLink="/login" class="back-link">← Retour à la connexion</a>
+        <div class="brand">
+          <svg viewBox="0 0 48 48" fill="none" class="brand-icon">
+            <path d="M10 38C10 38 14 18 36 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M36 10C36 10 40 26 28 35C21 40 14 38 10 38" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="brand-name">Dr. Farouk <em>Mrad</em></div>
+        </div>
+        <h2>Créer mon compte</h2>
+        <p>Renseignez vos informations pour accéder à votre espace</p>
+      </div>
+
+      <!-- Google SSO -->
+      <button class="sso-btn" id="googleBtn" type="button">
+        <img src="https://www.google.com/favicon.ico" alt="Google" class="sso-btn__icon" width="16" height="16" />
+        <span>S'inscrire avec Google</span>
+      </button>
+
+      <div class="divider">
+        <hr /><span>ou avec votre e-mail</span><hr />
+      </div>
+
+      <form id="signupForm" novalidate>
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">Prénom <span>*</span></label>
+            <div class="inp-wrap">
+              <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M3 18c0-3.5 3-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              <input type="text" name="prenom" placeholder="Jean" required />
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Nom <span>*</span></label>
+            <div class="inp-wrap">
+              <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M3 18c0-3.5 3-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              <input type="text" name="nom" placeholder="Dupont" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Adresse e-mail <span>*</span></label>
+          <div class="inp-wrap">
+            <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
+              <rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M2 7l8 5 8-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <input type="email" name="email" placeholder="jean.dupont@email.com" required />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">Téléphone <span>*</span></label>
+            <div class="inp-wrap">
+              <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
+                <path d="M5 4h10v12H5z" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M9 14h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              <input type="tel" name="telephone" placeholder="06 12 34 56 78" required />
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Date de naissance <span>*</span></label>
+            <div class="inp-wrap">
+              <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
+                <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M3 8h14M7 2v4M13 2v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              <input type="date" name="dateNaissance" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Mot de passe <span>*</span></label>
+          <div class="inp-wrap">
+            <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
+              <rect x="4" y="9" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M7 9V6.5a3 3 0 016 0V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <input type="password" name="password" placeholder="••••••••" required minlength="8" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Confirmer le mot de passe <span>*</span></label>
+          <div class="inp-wrap">
+            <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
+              <rect x="4" y="9" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M7 9V6.5a3 3 0 016 0V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <input type="password" name="confirmPassword" placeholder="••••••••" required />
+          </div>
+        </div>
+
+        <div class="row-opts" style="margin-top: 24px;">
+          <label class="check-label">
+            <input type="checkbox" required style="position:absolute; opacity:0;"/>
+            <div class="custom-cb">
+              <svg viewBox="0 0 10 10" fill="none">
+                <path d="M2 5l2.5 2.5L8 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span>J'accepte les <a href="#" class="forgot-link">Conditions d'utilisation</a>.</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-main">
+          S'inscrire
+        </button>
+
+      </form>
+    </div>
+  </div>
+</div>

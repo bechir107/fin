@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+:root {
+  /* Nature & Energie Theme Colors */
+  --bg-light:       #F5F5F5; /* Background: Gris clair */
+  --bg-card:        #FFFFFF; /* Pure white cards */
+  --border-subtle:  #E0E0E0; /* Soft border */
+
+  /* Primary & Accent */
+  --green-deep:     #2E7D32; /* Primary: Vert foncé */
+  --green-mid:      #4CAF50; /* Accent: Vert */
+  --green-fresh:    #4CAF50; /* Accent */
+  --green-light:    #E8F5E9; /* Soft Green Background */
+  
+  --gold:           #FF9800; /* Secondary: Orange */
+  --gold-light:     #FFF3E0;
+  
+  /* Text */
+  --text-dark:      #333333; /* Text: Gris foncé */
+  --text-mid:       #666666; /* Secondary Text */
+  --text-muted:     #999999; /* Muted Text */
+  --white:          #FFFFFF;
+  
+  /* Typography */
+  --font-display: 'Outfit', sans-serif;
+  --font-body:    'Plus Jakarta Sans', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-light);
+  color: var(--text-dark);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Light Theme Card Utility */
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+  border-radius: 24px;
+}
+
+/* Text Gradient Utility */
+.text-gradient {
+  background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(36px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
