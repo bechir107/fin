@@ -1,152 +1,328 @@
-<div class="dashboard">
-  <main class="main">
+<header class="header">
+  <h1>🌿 Cabinet Nutritionniste</h1>
+  <p>Système de Gestion des Rendez-vous</p>
+</header>
 
-    <!-- TOPBAR -->
-    <div class="topbar">
-      <div>
-        <h1 class="topbar-title">Bonjour, Dr. Martin 👋</h1>
-        <p class="topbar-sub">Voici vos rendez-vous du jour</p>
+<nav class="nav-tabs">
+  <button class="nav-btn" [class.active]="activeSection === 'calendar'" (click)="activeSection = 'calendar'">
+    📅 Calendrier & RDV
+  </button>
+  <button class="nav-btn" [class.active]="activeSection === 'appointments'" (click)="activeSection = 'appointments'">
+    📋 Liste des RDV
+    <span class="badge" *ngIf="pendingCount > 0">{{ pendingCount }}</span>
+  </button>
+  <button class="nav-btn" [class.active]="activeSection === 'availability'" (click)="activeSection = 'availability'">
+    ⚙️ Mes Disponibilités
+  </button>
+  <button class="nav-btn" [class.active]="activeSection === 'stats'" (click)="activeSection = 'stats'">
+    📊 Statistiques
+  </button>
+</nav>
+
+<div class="container">
+
+  <!-- ── CALENDRIER ── -->
+  <section *ngIf="activeSection === 'calendar'" class="section active">
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">{{ data.length }}</div>
+        <div class="stat-label">RDV Aujourd'hui</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ weekCount }}</div>
+        <div class="stat-label">Cette Semaine</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ onlineCount }}</div>
+        <div class="stat-label">Réservations en Ligne</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ phoneCount }}</div>
+        <div class="stat-label">RDV Téléphoniques</div>
       </div>
     </div>
 
-    <!-- STATS -->
-    <div class="stats-row">
-      <div class="stat-card" style="--c:#2563eb;--cb:rgba(37,99,235,0.1)">
-        <div class="stat-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-          </svg>
+    <div class="card">
+      <div class="calendar-header">
+        <div class="calendar-nav">
+          <button (click)="changeMonth(-1)">←</button>
+          <span class="current-month">{{ currentMonthLabel }}</span>
+          <button (click)="changeMonth(1)">→</button>
         </div>
-        <div>
-          <p class="stat-val">{{ data.length }}</p>
-          <p class="stat-label">Patients aujourd'hui</p>
-        </div>
-      </div>
-      <div class="stat-card" style="--c:#10b981;--cb:rgba(16,185,129,0.1)">
-        <div class="stat-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>
-        <div>
-          <p class="stat-val">0</p>
-          <p class="stat-label">Consultations terminées</p>
-        </div>
-      </div>
-      <div class="stat-card" style="--c:#f59e0b;--cb:rgba(245,158,11,0.1)">
-        <div class="stat-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-          </svg>
-        </div>
-        <div>
-          <p class="stat-val">{{ data.length }}</p>
-          <p class="stat-label">En attente</p>
-        </div>
-      </div>
-      <div class="stat-card" style="--c:#8b5cf6;--cb:rgba(139,92,246,0.1)">
-        <div class="stat-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-          </svg>
-        </div>
-        <div>
-          <p class="stat-val">{{i}}</p>
-          <p class="stat-label">RDV annulés</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- SECTION HEADER -->
-    <div class="section-header">
-      <h2 class="section-title">Rendez-vous du jour</h2>
-      <span class="section-count">{{ data.length }} patients</span>
-    </div>
-
-    <!-- LISTE PATIENTS -->
-    <div class="patients-list">
-      <div *ngFor="let p of data; let i = index"
-           class="patient-card"
-           [style.animation-delay]="i * 60 + 'ms'">
-
-        <div class="p-avatar">{{ p.nom[0] }}{{ p.prenom[0] }}</div>
-
-        <div class="p-info">
-          <h3 class="p-name">{{ p.nom }} {{ p.prenom }}</h3>
-          <span class="p-id">Patient #{{ p.id }}</span>
-        </div>
-
-        <div class="p-time">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-          </svg>
-          {{ p.hrdv }}
-        </div>
-
-        <div class="p-date">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-          </svg>
-          {{ p.date_rdv | date:'dd/MM/yyyy' }}
-        </div>
-
-        <div class="p-status">
-          <span class="badge-waiting">En attente</span>
-        </div>
-
-        <div class="p-actions">
-          <button class="btn-voir" (click)="supprdv(p.id)">
-             annuler
-
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </button>
-        </div>
+        <button class="btn btn-secondary" (click)="openPhoneModal()">
+          📞 + Ajouter RDV Téléphonique
+        </button>
       </div>
 
-      <!-- EMPTY STATE -->
-      <div *ngIf="data.length === 0" class="empty-state">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5">
-          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-        </svg>
-        <p>Aucun rendez-vous pour aujourd'hui</p>
-        <span>Cliquez sur Actualiser pour charger les données</span>
+      <div class="weekdays">
+        <div class="weekday" *ngFor="let d of weekDays">{{ d }}</div>
       </div>
-    </div>
 
-    <!-- CHARTS ROW -->
-    <div class="charts-row">
-
-      <!-- CHART 1 — 7 derniers jours -->
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <h3 class="chart-title">Patients cette semaine</h3>
-            <p class="chart-sub">Rendez-vous des 7 derniers jours</p>
+      <div class="days-grid">
+        <div class="day-cell" *ngFor="let cell of calendarCells" [class.other-month]="cell.otherMonth"
+          [class.today]="cell.isToday" [class.selected]="cell.dateStr === selectedDate"
+          (click)="cell.dateStr && !cell.otherMonth ? selectDate(cell.dateStr) : null">
+          <span class="day-number">{{ cell.day }}</span>
+          <div class="day-stats" *ngIf="cell.dateStr && !cell.otherMonth">
+            <span class="stat-dot booked" *ngIf="getBooked(cell.dateStr) > 0"></span>
+            <span class="stat-dot pending" *ngIf="getPending(cell.dateStr) > 0"></span>
+            <span class="stat-dot available" *ngIf="getAvailable(cell.dateStr) > 0"></span>
           </div>
-          <span class="chart-badge badge-green">7 jours passés</span>
-        </div>
-        <div class="chart-body">
-          <canvas #weekChart></canvas>
         </div>
       </div>
+    </div>
 
-      <!-- CHART 2 — Aujourd'hui + 6 jours futurs -->
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <h3 class="chart-title">Rendez-vous à venir</h3>
-            <p class="chart-sub">Aujourd'hui + 6 prochains jours</p>
-          </div>
-          <span class="chart-badge badge-blue">À venir</span>
+    <!-- Créneaux -->
+    <div class="card" *ngIf="selectedDate">
+      <div class="slots-header">
+        <h3 class="card-title">🕐 Créneaux du {{ selectedDateLabel }}</h3>
+        <button class="btn btn-outline" (click)="selectedDate = null">Fermer</button>
+      </div>
+      <div class="slots-grid">
+        <div class="time-slot" *ngFor="let slot of timeSlots" [class.booked]="isBooked(selectedDate, slot)"
+          [class.available]="!isBooked(selectedDate, slot) && isAvailableSlot(selectedDate, slot)"
+          [style.opacity]="!isBooked(selectedDate, slot) && !isAvailableSlot(selectedDate, slot) ? '0.3' : '1'"
+          [style.cursor]="!isBooked(selectedDate, slot) && !isAvailableSlot(selectedDate, slot) ? 'not-allowed' : 'pointer'"
+          [title]="getSlotTitle(selectedDate, slot)" (click)="onSlotClick(selectedDate, slot)">
+          {{ slot }}
         </div>
-        <div class="chart-body">
-          <canvas #futureChart></canvas>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── LISTE RDV ── -->
+  <section *ngIf="activeSection === 'appointments'" class="section active">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <h2 class="card-title" (click)="afficher()">📋 Tous les Rendez-vous</h2>
+      </div>
+
+      <div class="appointments-list">
+        <div class="appointment-card" *ngFor="let apt of data" [class.online]="apt.type === 'online'"
+          [class.phone]="apt.type === 'phone'" [class.confirmed]="apt.status === 'confirmed'">
+          <div class="appointment-info">
+            <h4>{{apt.nom}} {{apt.prenom}}</h4>
+            <div class="appointment-meta">
+              <span>📅 {{apt.date_rdv}}
+              </span>
+              <span>🕐{{apt.hrdv}}</span>
+              <span></span>:
+              <span class="appointment-status" [ngClass]="'status-' + apt.status">
+                {{ apt.status === 'confirmed' ? 'Confirmé' : apt.status === 'pending' ? 'En attente' : 'Annulé' }}
+              </span>
+            </div>
+          </div>
+          <div class="appointment-actions">
+            <button class="btn-icon confirm" title="Confirmer" (click)="confirmAppointment(apt.id)">✓</button>
+            <button class="btn-icon edit" title="Détails" (click)="openDetailsModal(apt)">✎</button>
+            <button class="btn-icon cancel" title="Annuler" (click)="supprdv(apt.id)">✕</button>
+          </div>
         </div>
       </div>
 
     </div>
+  </section>
 
-  </main>
+  <!-- ── DISPONIBILITÉS ── -->
+  <section *ngIf="activeSection === 'availability'" class="section active">
+    <div class="card">
+      <h2 class="card-title">⚙️ Gérer mes Disponibilités</h2>
+      <p style="margin-bottom:1.5rem; color:var(--text-light);">
+        Définissez vos horaires de consultation pour chaque jour de la semaine.
+      </p>
+
+      <div class="availability-settings">
+        <div class="day-schedule" *ngFor="let day of dayNames; let i = index">
+          <h4>{{ day }}</h4>
+          <div class="time-range" *ngFor="let slot of availability[i]; let j = index">
+            <input type="time" [(ngModel)]="availability[i][j].start" />
+            <span>à</span>
+            <input type="time" [(ngModel)]="availability[i][j].end" />
+            <button (click)="removeSlot(i, j)"
+              style="background:none; border:none; color:var(--danger); cursor:pointer;">✕</button>
+          </div>
+          <button class="add-slot-btn" (click)="addSlot(i)">+ Ajouter un créneau</button>
+        </div>
+      </div>
+
+      <div style="margin-top:2rem; padding-top:2rem; border-top:2px solid var(--bg-cream);">
+        <h3 style="margin-bottom:1rem; color:var(--primary);">Paramètres Généraux</h3>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          <div class="toggle-container">
+            <span>Accepter les réservations en ligne</span>
+            <div class="toggle" [class.active]="settings.onlineBooking"
+              (click)="settings.onlineBooking = !settings.onlineBooking">
+              <div class="toggle-handle"></div>
+            </div>
+          </div>
+          <div class="toggle-container">
+            <span>Envoyer des rappels automatiques</span>
+            <div class="toggle" [class.active]="settings.reminders" (click)="settings.reminders = !settings.reminders">
+              <div class="toggle-handle"></div>
+            </div>
+          </div>
+          <div class="toggle-container">
+            <span>Permettre les annulations en ligne</span>
+            <div class="toggle" [class.active]="settings.onlineCancel"
+              (click)="settings.onlineCancel = !settings.onlineCancel">
+              <div class="toggle-handle"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:2rem;">
+        <button class="btn btn-primary" (click)="saveAvailability()">💾 Sauvegarder les Modifications</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── STATISTIQUES ── -->
+  <section *ngIf="activeSection === 'stats'" class="section active">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">{{ todayCount }}</div>
+        <div class="stat-label">RDV ce mois</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">85%</div>
+        <div class="stat-label">Taux de confirmation</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">12%</div>
+        <div class="stat-label">Taux d'annulation</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">45min</div>
+        <div class="stat-label">Durée moyenne</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">📈 Activité des 7 derniers jours</h2>
+      <canvas #weekChart style="max-height:300px;"></canvas>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">📅 Rendez-vous à venir (7 jours)</h2>
+      <canvas #futureChart style="max-height:300px;"></canvas>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">🏆 Types de Consultation</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem;">
+        <div style="background:var(--bg-cream); padding:1rem; border-radius:10px;">
+          <strong style="color:var(--primary);">Première consultation</strong>
+          <div style="font-size:1.5rem; margin-top:0.5rem;">45%</div>
+        </div>
+        <div style="background:var(--bg-cream); padding:1rem; border-radius:10px;">
+          <strong style="color:var(--primary);">Suivi mensuel</strong>
+          <div style="font-size:1.5rem; margin-top:0.5rem;">35%</div>
+        </div>
+        <div style="background:var(--bg-cream); padding:1rem; border-radius:10px;">
+          <strong style="color:var(--primary);">Suivi hebdomadaire</strong>
+          <div style="font-size:1.5rem; margin-top:0.5rem;">20%</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ── MODAL RDV TÉLÉPHONIQUE ── -->
+<div class="modal-overlay" [class.active]="showPhoneModal" (click)="onOverlayClick($event, 'phone')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📞 Nouveau RDV Téléphonique</h3>
+      <button class="close-btn" (click)="showPhoneModal = false">&times;</button>
+    </div>
+    <form (ngSubmit)="submitPhoneBooking()" #phoneForm="ngForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" [(ngModel)]="nom" name="firstName" required />
+        </div>
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" [(ngModel)]="prenom" name="lastName" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email (optionnel)</label>
+        <input type="email" [(ngModel)]="email" name="email" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" [(ngModel)]="date" name="date" required (change)="updatePhoneSlots()" />
+        </div>
+        <div class="form-group">
+          <label>Heure</label>
+          <select [(ngModel)]="heure" name="time" required>
+            <option value="">Choisir...</option>
+            <option *ngFor="let s of phoneAvailableSlots" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex; gap:1rem; justify-content:flex-end; margin-top:1.5rem;">
+        <button type="button" class="btn btn-outline" (click)="showPhoneModal = false">Annuler</button>
+        <button type="submit" class="btn btn-primary" (click)="rdv()">Confirmer le
+          RDV</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── MODAL DÉTAILS ── -->
+<div class="modal-overlay" [class.active]="showDetailsModal" (click)="onOverlayClick($event, 'details')">
+  <div class="modal" *ngIf="selectedAppointment">
+    <div class="modal-header">
+      <h3>📋 Détails du Rendez-vous</h3>
+      <button class="close-btn" (click)="showDetailsModal = false">&times;</button>
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <div style="font-size:1.2rem; font-weight:600; color:var(--primary); margin-bottom:0.5rem;">
+
+      </div>
+    </div>
+    <div style="background:var(--bg-cream); padding:1rem; border-radius:10px; margin-bottom:1.5rem;">
+      <div style="display:grid; gap:0.8rem;">
+        <div><strong>Date :</strong></div>
+        <div><strong>Heure :</strong></div>
+        <div *ngIf="selectedAppointment.email"><strong>Email :</strong></div>
+        <div>
+          <strong>Statut :
+
+          </strong>
+          <span class="appointment-status" [ngClass]="'status-' + selectedAppointment.status" style="display:inline;">
+            {{ selectedAppointment.status === 'confirmed' ? 'Confirmé' : selectedAppointment.status === 'pending' ? 'En
+            attente' : 'Annulé' }}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:1.5rem;" *ngIf="selectedAppointment.notes">
+      <strong>Notes :</strong>
+      <p style="margin-top:0.5rem; color:var(--text-light);">{{ selectedAppointment.notes }}</p>
+    </div>
+    <div style="display:flex; gap:1rem; justify-content:flex-end;">
+      <button class="btn btn-primary" *ngIf="selectedAppointment.status === 'pending'"
+        (click)="confirmAppointment(selectedAppointment.id); showDetailsModal = false">
+        Confirmer le RDV
+      </button>
+      <button class="btn btn-danger" *ngIf="selectedAppointment.status !== 'cancelled'"
+        (click)="cancelAppointment(selectedAppointment.id); showDetailsModal = false">
+        Annuler le RDV
+      </button>
+      <button class="btn btn-outline" (click)="showDetailsModal = false">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── NOTIFICATION ── -->
+<div class="notification" [class.show]="notifVisible" [class.success]="notifType === 'success'"
+  [class.warning]="notifType === 'warning'" [class.error]="notifType === 'error'">
+  {{ notifMessage }}
 </div>

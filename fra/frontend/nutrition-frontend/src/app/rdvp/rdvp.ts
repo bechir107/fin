@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './rdvp.css',
 })
 export class Rdvp {
-  constructor(private service: Service) {}
+  constructor(private service: Service) { }
 
   nom = ""
   prenom = ""
@@ -21,14 +21,14 @@ export class Rdvp {
   heuresPrises: string[] = []
 
   // ✅ Liste des heures de ton ENUM
-  toutesHeures = ['08:00','09:00','10:00','11:00','13:00','14:00','15:00']
+  toutesHeures = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00']
 
   // ✅ Vérifie si une heure est réservée
   estReservee(h: string): boolean {
     return this.heuresPrises.includes(h);
   }
 
-  
+
   chargerHeures() {
     if (!this.date) return;
     this.service.getHeures(this.date).subscribe((res: any) => {
@@ -60,4 +60,6 @@ export class Rdvp {
         }
       });
   }
+
+
 }
