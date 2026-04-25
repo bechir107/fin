@@ -18,22 +18,25 @@ export class Rdvp {
   email = ""
   date = ""
   hrdv = ""
+  toutesHeures: string[] = []
   heuresPrises: string[] = []
-
-  // ✅ Liste des heures de ton ENUM
-  toutesHeures = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00']
-
   // ✅ Vérifie si une heure est réservée
   estReservee(h: string): boolean {
     return this.heuresPrises.includes(h);
   }
 
-
   chargerHeures() {
     if (!this.date) return;
+    console.log('Date choisie:', this.date);
+
     this.service.getHeures(this.date).subscribe((res: any) => {
-      this.heuresPrises = res;
-      this.hrdv = ""; // reset heure si date change
+      console.log('Réponse complète:', res);
+      console.log('Heures disponibles:', res.disponibles);
+      console.log('Heures prises:', res.prises);
+
+      this.toutesHeures = res.disponibles;
+      this.heuresPrises = res.prises;
+      this.hrdv = '';
     });
   }
 

@@ -73,7 +73,7 @@
       </div>
     </div>
 
-    <!-- Créneaux -->
+    <!-- Créneaux du jour sélectionné -->
     <div class="card" *ngIf="selectedDate">
       <div class="slots-header">
         <h3 class="card-title">🕐 Créneaux du {{ selectedDateLabel }}</h3>
@@ -96,32 +96,39 @@
   <section *ngIf="activeSection === 'appointments'" class="section active">
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+
+        <!-- ✅ Corrigé : afficher TOUS les RDV pas seulement aujourd'hui -->
         <h2 class="card-title" (click)="afficher()">📋 Tous les Rendez-vous</h2>
       </div>
 
       <div class="appointments-list">
-        <div class="appointment-card" *ngFor="let apt of data" [class.online]="apt.type === 'online'"
-          [class.phone]="apt.type === 'phone'" [class.confirmed]="apt.status === 'confirmed'">
+
+        <!-- ✅ Corrigé : utiliser filteredAppointments au lieu de allPatients/appointments -->
+        <div class="appointment-card" *ngFor="let apt of filteredAppointments" [class.confirmed]="apt.statut === 'confirmed'"
+          [class.pending]="apt.statut === 'pending'">
+
           <div class="appointment-info">
-            <h4>{{apt.nom}} {{apt.prenom}}</h4>
+            <h4>{{ apt.nom }} {{ apt.prenom }}</h4>
             <div class="appointment-meta">
-              <span>📅 {{apt.date_rdv}}
-              </span>
-              <span>🕐{{apt.hrdv}}</span>
-              <span></span>:
-              <span class="appointment-status" [ngClass]="'status-' + apt.status">
-                {{ apt.status === 'confirmed' ? 'Confirmé' : apt.status === 'pending' ? 'En attente' : 'Annulé' }}
-              </span>
+              <span>📅 {{ apt.date_rdv | date:'dd/MM/yyyy' }}</span>
+              <span>🕐 {{ apt.hrdv }}</span>
+              <span>✉️ {{ apt.email }}</span>
             </div>
           </div>
-          <div class="appointment-actions">
-            <button class="btn-icon confirm" title="Confirmer" (click)="confirmAppointment(apt.id)">✓</button>
-            <button class="btn-icon edit" title="Détails" (click)="openDetailsModal(apt)">✎</button>
-            <button class="btn-icon cancel" title="Annuler" (click)="supprdv(apt.id)">✕</button>
+
+          <div class="appointment-actions" style="display: flex; gap: 0.5rem; align-items: center;">
+            <button *ngIf="apt.statut === 'pending'" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.85rem;" (click)="confirmAppointment(apt.id)">Accepter</button>
+            <button class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.85rem;" (click)="openDetailsModal(apt)">Détails</button>
+            <button class="btn" style="padding: 0.4rem 1rem; font-size: 0.85rem; background: var(--danger); color: white; border: none;" (click)="cancelAppointment(apt.id)">Refuser</button>
           </div>
         </div>
-      </div>
 
+        <!-- ✅ Message si aucun RDV -->
+        <div *ngIf="filteredAppointments.length === 0" style="text-align:center; color:var(--text-light); padding:2rem;">
+          Aucun rendez-vous trouvé
+        </div>
+
+      </div>
     </div>
   </section>
 
@@ -174,7 +181,9 @@
       </div>
 
       <div style="margin-top:2rem;">
-        <button class="btn btn-primary" (click)="saveAvailability()">💾 Sauvegarder les Modifications</button>
+        <button class="btn btn-primary" (click)="saveAvailability()">
+          💾 Sauvegarder les Modifications
+        </button>
       </div>
     </div>
   </section>
@@ -183,7 +192,7 @@
   <section *ngIf="activeSection === 'stats'" class="section active">
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-value">{{ todayCount }}</div>
+        <div class="stat-value">{{ allPatients.length }}</div>
         <div class="stat-label">RDV ce mois</div>
       </div>
       <div class="stat-card">
@@ -238,7 +247,9 @@
       <h3>📞 Nouveau RDV Téléphonique</h3>
       <button class="close-btn" (click)="showPhoneModal = false">&times;</button>
     </div>
-    <form (ngSubmit)="submitPhoneBooking()" #phoneForm="ngForm">
+
+    <!-- ✅ Corrigé : un seul (ngSubmit) sans double appel -->
+    <form (ngSubmit)="rdv()" #phoneForm="ngForm">
       <div class="form-row">
         <div class="form-group">
           <label>Prénom</label>
@@ -258,18 +269,28 @@
           <label>Date</label>
           <input type="date" [(ngModel)]="date" name="date" required (change)="updatePhoneSlots()" />
         </div>
-        <div class="form-group">
-          <label>Heure</label>
-          <select [(ngModel)]="heure" name="time" required>
-            <option value="">Choisir...</option>
-            <option *ngFor="let s of phoneAvailableSlots" [value]="s">{{ s }}</option>
-          </select>
+        <div class="form-group" *ngIf="date && phoneAvailableSlots.length > 0">
+          <label>Sélectionnez une heure</label>
+          <div class="time-slots-grid">
+            <button type="button" class="time-slot-btn" 
+                    *ngFor="let s of phoneAvailableSlots"
+                    [class.selected]="heure === s" 
+                    (click)="heure = s">
+              {{ s }}
+            </button>
+          </div>
+        </div>
+        <div class="form-group" *ngIf="date && phoneAvailableSlots.length === 0">
+          <div style="color:var(--danger); font-size:0.9rem; margin-top:0.5rem; font-weight:600; padding: 1rem; background: #fef2f2; border-radius: 8px; text-align: center;">
+            Aucun créneau disponible pour cette date.
+          </div>
         </div>
       </div>
       <div style="display:flex; gap:1rem; justify-content:flex-end; margin-top:1.5rem;">
         <button type="button" class="btn btn-outline" (click)="showPhoneModal = false">Annuler</button>
-        <button type="submit" class="btn btn-primary" (click)="rdv()">Confirmer le
-          RDV</button>
+
+        <!-- ✅ Corrigé : type="submit" suffit, pas besoin de (click)="rdv()" en plus -->
+        <button type="submit" class="btn btn-primary">Confirmer le RDV</button>
       </div>
     </form>
   </div>
@@ -282,40 +303,32 @@
       <h3>📋 Détails du Rendez-vous</h3>
       <button class="close-btn" (click)="showDetailsModal = false">&times;</button>
     </div>
+
+    <!-- ✅ Corrigé : afficher les vraies données -->
     <div style="margin-bottom:1.5rem;">
       <div style="font-size:1.2rem; font-weight:600; color:var(--primary); margin-bottom:0.5rem;">
-
+        {{ selectedAppointment.nom }} {{ selectedAppointment.prenom }}
       </div>
     </div>
+
     <div style="background:var(--bg-cream); padding:1rem; border-radius:10px; margin-bottom:1.5rem;">
       <div style="display:grid; gap:0.8rem;">
-        <div><strong>Date :</strong></div>
-        <div><strong>Heure :</strong></div>
-        <div *ngIf="selectedAppointment.email"><strong>Email :</strong></div>
+        <div><strong>Date :</strong> {{ selectedAppointment.date_rdv | date:'dd/MM/yyyy' }}</div>
+        <div><strong>Heure :</strong> {{ selectedAppointment.hrdv }}</div>
+        <div *ngIf="selectedAppointment.email">
+          <strong>Email :</strong> {{ selectedAppointment.email }}
+        </div>
         <div>
-          <strong>Statut :
-
-          </strong>
-          <span class="appointment-status" [ngClass]="'status-' + selectedAppointment.status" style="display:inline;">
-            {{ selectedAppointment.status === 'confirmed' ? 'Confirmé' : selectedAppointment.status === 'pending' ? 'En
-            attente' : 'Annulé' }}
+          <strong>Statut :</strong>
+          <span class="appointment-status" style="display:inline; margin-left:0.5rem;">
+            {{ selectedAppointment.statut === 'confirmed' ? '✅ Confirmé' :
+            selectedAppointment.statut === 'pending' ? '⏳ En attente' : '❌ Annulé' }}
           </span>
         </div>
       </div>
     </div>
-    <div style="margin-bottom:1.5rem;" *ngIf="selectedAppointment.notes">
-      <strong>Notes :</strong>
-      <p style="margin-top:0.5rem; color:var(--text-light);">{{ selectedAppointment.notes }}</p>
-    </div>
+
     <div style="display:flex; gap:1rem; justify-content:flex-end;">
-      <button class="btn btn-primary" *ngIf="selectedAppointment.status === 'pending'"
-        (click)="confirmAppointment(selectedAppointment.id); showDetailsModal = false">
-        Confirmer le RDV
-      </button>
-      <button class="btn btn-danger" *ngIf="selectedAppointment.status !== 'cancelled'"
-        (click)="cancelAppointment(selectedAppointment.id); showDetailsModal = false">
-        Annuler le RDV
-      </button>
       <button class="btn btn-outline" (click)="showDetailsModal = false">Fermer</button>
     </div>
   </div>

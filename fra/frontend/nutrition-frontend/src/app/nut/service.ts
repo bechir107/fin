@@ -13,6 +13,10 @@ export class Service {
     return this.http.get<Int16Array[]>(`http://127.0.0.1:5000/supprdv/${id}`);
   }
 
+  accepterRdv(id: number) {
+    return this.http.put(`http://127.0.0.1:5000/accepter_rdv/${id}`, {});
+  }
+
 
 
   constructor(private http: HttpClient, private router: Router) { }
@@ -30,6 +34,7 @@ export class Service {
   getPatients() {
     return this.http.get<any>('http://127.0.0.1:5000/patient');
   }
+
   saveDisponibilites(disponibilites: any) {
     return this.http.post('http://127.0.0.1:5000/disponibilites', { disponibilites });
   }
@@ -49,8 +54,8 @@ export class Service {
 
 
 
-  getHeures(datehdv: string) {
-    return this.http.get<string[]>(`http://127.0.0.1:5000/heures/${datehdv}`);
+  getHeures(date: string): Observable<any> {
+    return this.http.get(`http://localhost:5000/heures/${date}`);
   }
   ajouterpatient(nom: string, prenom: string, age: string, sexe: string, email: string, password: string, tel: string, adress: string, note_interne: string, taille: string, poids_actuiele: string, allergie: string, Conditions_me: string, niveau_act: string, objectif: string, description: string): Observable<any> {
     return this.http.post(`http://127.0.0.1:5000/ajoutep`, { nom, prenom, age, sexe, email, password, tel, adress, note_interne, taille, poids_actuiele, allergie, Conditions_me, niveau_act, objectif, description });
@@ -63,6 +68,13 @@ export class Service {
   }
   loginNut(email: string, password: string) {
     return this.http.post(`http://127.0.0.1:5000/loginNut`, { email, password })
+  }
+
+  getDisponibilite(): Observable<any> {
+    return this.http.get('http://localhost:5000/disponibilite');
+  }
+  saveDisponibilite(slots: any[]): Observable<any> {
+    return this.http.post('http://localhost:5000/disponibilite', slots);
   }
 }
 

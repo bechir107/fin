@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild, ElementRef, ViewEncapsulation, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ViewEncapsulation, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { Service } from '../nut/service';
-import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, registerables } from 'chart.js';
 
@@ -8,17 +8,14 @@ Chart.register(...registerables);
 
 interface Appointment {
   id: number;
-  name: string;
-  date: string;
-  time: string;
+  nom: string;
+  prenom: string;
+  date_rdv: string;
+  hrdv: string;
   type: 'online' | 'phone';
-  status: 'confirmed' | 'pending' | 'cancelled';
-  phone: string;
+  statut: 'confirmed' | 'pending' | 'cancelled';
   email: string;
-  notes: string;
 }
-
-
 
 interface TimeRange { start: string; end: string; }
 
@@ -33,43 +30,20 @@ export class Rdv implements OnInit {
 
   nom: string = '';
   prenom: string = '';
-  date: string = ''
+  date: string = '';
   email: string = '';
   heure: string = '';
-
 
   @ViewChild('weekChart') weekChartRef!: ElementRef;
   @ViewChild('futureChart') futureChartRef!: ElementRef;
 
-  // ── Données backend (existant)
   data: any[] = [];
   allPatients: any[] = [];
   chart: any;
   futureChart: any;
-  i = 0;
 
   activeSection = 'calendar';
-  aujordhui: any = []
-  afficherdv() {
-    this.service.getPatients().subscribe({
-      next: (response) => {
-        const aujourdhui = new Date().toISOString().split('T')[0]; // "2026-04-21"
-
-        this.aujordhui = response.patients.filter((p: any) => {
-          if (!p.date_rdv) return false;
-          const dateRdv = new Date(p.date_rdv).toISOString().split('T')[0];
-          return dateRdv === aujourdhui;
-        });
-
-        console.log(this.aujordhui)
-
-      },
-      error: (error) => {
-        console.log(error);
-      }
-    });
-  }
-
+  aujordhui: any = [];
 
   currentDate = new Date();
   selectedDate: string | null = null;
@@ -82,16 +56,6 @@ export class Rdv implements OnInit {
     return `${this.monthNames[this.currentDate.getMonth()]} ${this.currentDate.getFullYear()}`;
   }
 
-  rdv() {
-    this.service.rondv(this.nom, this.prenom, this.email, this.date, this.heure).subscribe({
-      next: (response) => {
-        console.log(response);
-      },
-      error: (error) => {
-        console.log(error);
-      }
-    })
-  }
   get selectedDateLabel() {
     if (!this.selectedDate) return '';
     return new Date(this.selectedDate).toLocaleDateString('fr-FR', {
@@ -99,59 +63,36 @@ export class Rdv implements OnInit {
     });
   }
 
-  // ── Créneaux horaires
   timeSlots = [
-    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
+    '08:00', '09:00', '10:00', '11:00',
+    '14:00', '15:00', '16:00', '17:00'
   ];
 
-  // ── Disponibilités
   dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-  availability: TimeRange[][] = [
-    [],
-    [{ start: '09:00', end: '12:00' }, { start: '14:00', end: '18:00' }],
-    [{ start: '09:00', end: '12:00' }, { start: '14:00', end: '18:00' }],
-    [{ start: '09:00', end: '12:00' }, { start: '14:00', end: '18:00' }],
-    [{ start: '09:00', end: '12:00' }, { start: '14:00', end: '18:00' }],
-    [{ start: '09:00', end: '12:00' }],
-    []
-  ];
+  availability: TimeRange[][] = [[], [], [], [], [], [], []];
 
   settings = { onlineBooking: true, reminders: true, onlineCancel: false };
 
-  // ── Rendez-vous
-  appointments: Appointment[] = [
-    { id: 1, name: 'Marie Dupont', date: '2026-04-19', time: '09:00', type: 'online', status: 'confirmed', phone: '06 12 34 56 78', email: 'marie@email.com', notes: 'Première consultation' },
-    { id: 2, name: 'Jean Martin', date: '2026-04-19', time: '10:30', type: 'phone', status: 'confirmed', phone: '07 98 76 54 32', email: '', notes: 'Suivi mensuel' },
-    { id: 3, name: 'Sophie Bernard', date: '2026-04-19', time: '14:00', type: 'online', status: 'pending', phone: '06 45 67 89 01', email: 'sophie@email.com', notes: 'Rééquilibrage alimentaire' },
-    { id: 4, name: 'Pierre Durand', date: '2026-04-19', time: '16:30', type: 'phone', status: 'confirmed', phone: '07 11 22 33 44', email: '', notes: 'Contrôle après 3 mois' },
-    { id: 5, name: 'Claire Petit', date: '2026-04-20', time: '09:00', type: 'online', status: 'confirmed', phone: '06 55 66 77 88', email: 'claire@email.com', notes: 'Consultation grossesse' },
-    { id: 6, name: 'Lucas Moreau', date: '2026-04-21', time: '11:00', type: 'phone', status: 'pending', phone: '07 99 88 77 66', email: '', notes: 'Prise de masse musculaire' }
-  ];
+  // ✅ appointments vient du backend maintenant
+  appointments: any[] = [];
 
-  filteredAppointments: Appointment[] = [];
+  filteredAppointments: any[] = [];
   filterStatus = 'all';
   filterType = 'all';
 
-  // ── Stats (utilisées dans le HTML)
   todayCount = 0;
   weekCount = 0;
   onlineCount = 0;
   phoneCount = 0;
   pendingCount = 0;
 
-  // ── Modals
   showPhoneModal = false;
+  showSuccessCard = false; // ✅ Nouvel état pour la carte de succès
   showDetailsModal = false;
-  selectedAppointment: Appointment | null = null;
+  selectedAppointment: any = null;
 
-  phoneBooking = {
-    firstName: '', lastName: '', phone: '',
-    email: '', date: '', time: '', type: 'first', notes: ''
-  };
   phoneAvailableSlots: string[] = [];
 
-  // ── Notification
   notifVisible = false;
   notifMessage = '';
   notifType = 'success';
@@ -159,31 +100,56 @@ export class Rdv implements OnInit {
   constructor(
     private service: Service,
     @Inject(PLATFORM_ID) private platformId: Object,
+    private cdr: ChangeDetectorRef
   ) { }
 
   // ─────────────────────────────────────────
-  // LIFECYCLE
+  // ✅ ngOnInit — UNE SEULE FOIS
   // ─────────────────────────────────────────
-
   ngOnInit(): void {
     this.afficher();
     this.buildCalendar();
-    this.applyFilters();
     this.updateStats();
+    this.chargerDisponibilite();
   }
 
   // ─────────────────────────────────────────
-  // BACKEND (code existant inchangé)
+  // BACKEND
   // ─────────────────────────────────────────
 
+  rdv() {
+    if (!this.nom || !this.prenom || !this.date) {
+      this.showNotif('Veuillez remplir vos informations', 'error');
+      return;
+    }
+    if (!this.heure) {
+      this.showNotif('Veuillez sélectionner une heure', 'error');
+      return;
+    }
+    this.service.rondv(this.nom, this.prenom, this.email, this.date, this.heure).subscribe({
+      next: (response) => {
+        this.showPhoneModal = false;
+        this.nom = ''; this.prenom = ''; this.email = '';
+        this.date = ''; this.heure = '';
+        this.afficher();
+        this.showSuccessCard = true;
+        setTimeout(() => this.showSuccessCard = false, 4000);
+      },
+      error: (error) => {
+        this.showNotif('Erreur lors de l\'ajout', 'error');
+        console.log(error);
+      }
+    });
+  }
+
   supprdv(id: number) {
-    this.i = this.i + 1;
+    if (!confirm('Annuler ce rendez-vous ?')) return;
     this.service.supprdv(id).subscribe({
       next: () => {
         this.afficher();
-        alert('Rendez-vous sera annulé');
+        this.showNotif('Rendez-vous annulé', 'warning');
       },
-      error: (err) => console.error('Erreur lors de la suppression du rendez-vous', err)
+      error: (err) => console.error(err)
     });
   }
 
@@ -192,6 +158,7 @@ export class Rdv implements OnInit {
       next: (response: { patients: any[] }) => {
         this.allPatients = response.patients.filter(p => p.date_rdv);
 
+        // RDV d'aujourd'hui seulement pour le calendrier
         const aujourdhui = new Date();
         this.data = this.allPatients.filter((p: any) => {
           const d = new Date(p.date_rdv);
@@ -200,17 +167,66 @@ export class Rdv implements OnInit {
             d.getFullYear() === aujourdhui.getFullYear();
         });
 
+        // ✅ Mettre à jour appointments pour le calendrier
+        this.appointments = this.allPatients.map(p => ({
+          id: p.id,
+          nom: p.nom,
+          prenom: p.prenom,
+          date: new Date(p.date_rdv).toISOString().split('T')[0],
+          time: this.padTime(p.hrdv),
+          date_rdv: p.date_rdv,
+          hrdv: this.padTime(p.hrdv),
+          email: p.email,
+          statut: p.statut || 'pending',
+          status: p.statut || 'pending',
+          type: 'online'
+        }));
+
+        this.updateStats();
+        this.applyFilters();
+        this.cdr.detectChanges(); // ✅ Force Angular à rafraîchir l'interface
+
         if (isPlatformBrowser(this.platformId)) {
           setTimeout(() => {
             this.buildChart();
             this.buildFutureChart();
           }, 300);
         }
-        console.log(this.allPatients)
       },
       error: (err) => console.error(err)
     });
   }
+
+  confirmAppointment(id: number) {
+    const apt = this.appointments.find(a => a.id === id);
+    if (apt) {
+      this.service.accepterRdv(id).subscribe({
+        next: () => {
+          apt.status = 'confirmed';
+          apt.statut = 'confirmed';
+          this.updateStats();
+          this.buildCalendar();
+          this.applyFilters();
+          this.showNotif('Rendez-vous confirmé !', 'success');
+        },
+        error: () => this.showNotif('Erreur de confirmation', 'error')
+      });
+    }
+  }
+
+  cancelAppointment(id: number) {
+    if (!confirm('Annuler ce rendez-vous ?')) return;
+    this.supprdv(id);
+  }
+
+  openDetailsModal(apt: any) {
+    this.selectedAppointment = apt;
+    this.showDetailsModal = true;
+  }
+
+  // ─────────────────────────────────────────
+  // CHARTS
+  // ─────────────────────────────────────────
 
   buildChart(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -235,7 +251,6 @@ export class Rdv implements OnInit {
     );
 
     if (this.chart) this.chart.destroy();
-
     const gradient = ctx.createLinearGradient(0, 0, 0, 220);
     gradient.addColorStop(0, 'rgba(45,106,69,0.35)');
     gradient.addColorStop(1, 'rgba(45,106,69,0.01)');
@@ -244,29 +259,9 @@ export class Rdv implements OnInit {
       type: 'line',
       data: {
         labels: days.map(d => d.label),
-        datasets: [{
-          label: 'Patients',
-          data: counts,
-          fill: true,
-          backgroundColor: gradient,
-          borderColor: '#2d6a45',
-          borderWidth: 2.5,
-          tension: 0.45,
-          pointBackgroundColor: '#2d6a45'
-        }]
+        datasets: [{ label: 'Patients', data: counts, fill: true, backgroundColor: gradient, borderColor: '#2d6a45', borderWidth: 2.5, tension: 0.45, pointBackgroundColor: '#2d6a45' }]
       },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              stepSize: 1,
-              precision: 0,
-              callback: (value) => Number.isInteger(Number(value)) ? value : ''
-            }
-          }
-        }
-      }
+      options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0, callback: (v) => Number.isInteger(Number(v)) ? v : '' } } } }
     });
   }
 
@@ -293,34 +288,18 @@ export class Rdv implements OnInit {
     );
 
     if (this.futureChart) this.futureChart.destroy();
-
     this.futureChart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: days.map(d => d.label),
-        datasets: [{
-          label: 'Rendez-vous',
-          data: counts,
-          backgroundColor: '#2563eb'
-        }]
+        datasets: [{ label: 'Rendez-vous', data: counts, backgroundColor: '#2563eb' }]
       },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              stepSize: 1,
-              precision: 0,
-              callback: (value) => Number.isInteger(Number(value)) ? value : ''
-            }
-          }
-        }
-      }
+      options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0, callback: (v) => Number.isInteger(Number(v)) ? v : '' } } } }
     });
   }
 
   // ─────────────────────────────────────────
-  // CALENDRIER UI
+  // CALENDRIER
   // ─────────────────────────────────────────
 
   buildCalendar() {
@@ -340,9 +319,7 @@ export class Rdv implements OnInit {
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       this.calendarCells.push({
-        day: d,
-        otherMonth: false,
-        dateStr,
+        day: d, otherMonth: false, dateStr,
         isToday: today.getDate() === d && today.getMonth() === month && today.getFullYear() === year
       });
     }
@@ -358,9 +335,7 @@ export class Rdv implements OnInit {
     this.buildCalendar();
   }
 
-  selectDate(dateStr: string) {
-    this.selectedDate = dateStr;
-  }
+  selectDate(dateStr: string) { this.selectedDate = dateStr; }
 
   // ─────────────────────────────────────────
   // SLOTS
@@ -374,7 +349,7 @@ export class Rdv implements OnInit {
       while (cur < range.end) {
         slots.push(cur);
         const [h, m] = cur.split(':').map(Number);
-        const nm = m + 30;
+        const nm = m + 60; // ← 1h par créneau
         cur = `${String(h + Math.floor(nm / 60)).padStart(2, '0')}:${String(nm % 60).padStart(2, '0')}`;
       }
     });
@@ -382,7 +357,7 @@ export class Rdv implements OnInit {
   }
 
   isBooked(dateStr: string, time: string): boolean {
-    return this.appointments.some(a => a.date === dateStr && a.time === time && a.status !== 'cancelled');
+    return this.appointments.some(a => a.date === dateStr && a.time === time && a.status === 'confirmed');
   }
 
   isAvailableSlot(dateStr: string, time: string): boolean {
@@ -390,56 +365,67 @@ export class Rdv implements OnInit {
   }
 
   getSlotTitle(dateStr: string, time: string): string {
-    const apt = this.appointments.find(a => a.date === dateStr && a.time === time && a.status !== 'cancelled');
-    return apt ? `${apt.name} (${apt.type === 'phone' ? 'Téléphone' : 'En ligne'})` : '';
+    const apt = this.appointments.find(a => a.date === dateStr && a.time === time && a.status === 'confirmed');
+    return apt ? `${apt.nom} ${apt.prenom}` : '';
   }
 
   onSlotClick(dateStr: string, time: string) {
-    const apt = this.appointments.find(a => a.date === dateStr && a.time === time && a.status !== 'cancelled');
+    const apt = this.appointments.find(a => a.date === dateStr && a.time === time && a.status === 'confirmed');
     if (apt) this.openDetailsModal(apt);
   }
 
-  getBooked(dateStr: string) { return this.appointments.filter(a => a.date === dateStr && a.status !== 'cancelled').length; }
-  getPending(dateStr: string) { return this.appointments.filter(a => a.date === dateStr && a.status === 'pending').length; }
-  getAvailable(dateStr: string) { return this.getAvailableSlots(dateStr).length; }
-
-  // ─────────────────────────────────────────
-  // RENDEZ-VOUS
-  // ─────────────────────────────────────────
-
-  applyFilters() {
-    this.filteredAppointments = this.appointments
-      .filter(a => this.filterStatus === 'all' || a.status === this.filterStatus)
-      .filter(a => this.filterType === 'all' || a.type === this.filterType)
-      .sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime());
+  getBooked(dateStr: string) {
+    return this.appointments.filter(a => a.date === dateStr && a.status === 'confirmed').length;
+  }
+  getPending(dateStr: string) {
+    return this.appointments.filter(a => a.date === dateStr && a.status === 'pending').length;
+  }
+  getAvailable(dateStr: string) {
+    return this.getAvailableSlots(dateStr).filter(s => !this.isBooked(dateStr, s)).length;
   }
 
-  confirmAppointment(id: number) {
-    const apt = this.appointments.find(a => a.id === id);
-    if (apt) {
-      apt.status = 'confirmed';
-      this.applyFilters();
-      this.updateStats();
-      this.buildCalendar();
-      this.showNotif('Rendez-vous confirmé !', 'success');
+  // ─────────────────────────────────────────
+  // DISPONIBILITÉS — MySQL
+  // ─────────────────────────────────────────
+
+  chargerDisponibilite() {
+    this.service.getDisponibilite().subscribe((res: any[]) => {
+      this.availability = this.dayNames.map(() => []);
+      res.forEach(slot => {
+        const idx = this.dayNames.findIndex(day => day.toLowerCase() === slot.jour.toLowerCase());
+        if (idx >= 0) {
+          this.availability[idx].push({ start: this.padTime(slot.heure_debut), end: this.padTime(slot.heure_fin) });
+        }
+      });
+      this.cdr.detectChanges(); // ✅ Force Angular à rafraîchir le calendrier avec les dispo
+    });
+  }
+
+  addSlot(day: number) {
+    this.availability[day].push({ start: '09:00', end: '12:00' });
+  }
+
+  removeSlot(day: number, i: number) {
+    if (confirm('Voulez-vous vraiment retirer ce créneau de vos disponibilités ?\n(N\'oubliez pas de Sauvegarder ensuite)')) {
+      this.availability[day].splice(i, 1);
     }
   }
 
-  cancelAppointment(id: number) {
-    if (!confirm('Annuler ce rendez-vous ?')) return;
-    const apt = this.appointments.find(a => a.id === id);
-    if (apt) {
-      apt.status = 'cancelled';
-      this.applyFilters();
-      this.updateStats();
-      this.buildCalendar();
-      this.showNotif('Rendez-vous annulé', 'warning');
-    }
-  }
-
-  openDetailsModal(apt: Appointment) {
-    this.selectedAppointment = apt;
-    this.showDetailsModal = true;
+  // ✅ saveAvailability — sauvegarde dans MySQL
+  saveAvailability() {
+    const slots: any[] = [];
+    this.availability.forEach((ranges, idx) => {
+      ranges.forEach(range => {
+        slots.push({ jour: this.dayNames[idx], heure_debut: range.start, heure_fin: range.end });
+      });
+    });
+    this.service.saveDisponibilite(slots).subscribe({
+      next: () => {
+        this.buildCalendar();
+        this.showNotif('Disponibilités sauvegardées !', 'success');
+      },
+      error: () => this.showNotif('Erreur de sauvegarde', 'error')
+    });
   }
 
   // ─────────────────────────────────────────
@@ -447,53 +433,19 @@ export class Rdv implements OnInit {
   // ─────────────────────────────────────────
 
   openPhoneModal() {
-    const today = new Date().toISOString().split('T')[0];
-    this.phoneBooking = { firstName: '', lastName: '', phone: '', email: '', date: today, time: '', type: 'first', notes: '' };
-    this.updatePhoneSlots();
+    this.nom = ''; this.prenom = ''; this.email = '';
+    this.date = ''; this.heure = '';
+    this.phoneAvailableSlots = [];
     this.showPhoneModal = true;
   }
 
   updatePhoneSlots() {
-    this.phoneAvailableSlots = this.phoneBooking.date
-      ? this.getAvailableSlots(this.phoneBooking.date)
-      : [];
-  }
-
-  submitPhoneBooking() {
-    const apt: Appointment = {
-      id: Date.now(),
-      name: `${this.phoneBooking.firstName} ${this.phoneBooking.lastName}`,
-      date: this.phoneBooking.date,
-      time: this.phoneBooking.time,
-      type: 'phone',
-      status: 'confirmed',
-      phone: this.phoneBooking.phone,
-      email: this.phoneBooking.email,
-      notes: this.phoneBooking.notes
-    };
-    this.appointments.push(apt);
-    this.showPhoneModal = false;
-    this.applyFilters();
-    this.updateStats();
-    this.buildCalendar();
-    this.showNotif('RDV téléphonique ajouté !', 'success');
-  }
-
-  // ─────────────────────────────────────────
-  // DISPONIBILITÉS
-  // ─────────────────────────────────────────
-
-  addSlot(day: number) {
-    this.availability[day].push({ start: '09:00', end: '12:00' });
-  }
-
-  removeSlot(day: number, i: number) {
-    this.availability[day].splice(i, 1);
-  }
-
-  saveAvailability() {
-    this.buildCalendar();
-    this.showNotif('Disponibilités sauvegardées !', 'success');
+    if (!this.date) {
+      this.phoneAvailableSlots = [];
+      return;
+    }
+    const allSlots = this.getAvailableSlots(this.date);
+    this.phoneAvailableSlots = allSlots.filter(s => !this.isBooked(this.date, s));
   }
 
   // ─────────────────────────────────────────
@@ -509,10 +461,19 @@ export class Rdv implements OnInit {
 
     const active = this.appointments.filter(a => a.status !== 'cancelled');
     this.todayCount = active.filter(a => a.date === today).length;
-    this.weekCount = active.filter(a => { const d = new Date(a.date); return d >= weekStart && d <= weekEnd; }).length;
+    this.weekCount = active.filter(a => {
+      const d = new Date(a.date);
+      return d >= weekStart && d <= weekEnd;
+    }).length;
     this.onlineCount = active.filter(a => a.type === 'online').length;
     this.phoneCount = active.filter(a => a.type === 'phone').length;
     this.pendingCount = this.appointments.filter(a => a.status === 'pending').length;
+  }
+
+  applyFilters() {
+    this.filteredAppointments = this.appointments
+      .filter(a => this.filterStatus === 'all' || a.status === this.filterStatus)
+      .filter(a => this.filterType === 'all' || a.type === this.filterType);
   }
 
   // ─────────────────────────────────────────
@@ -532,4 +493,14 @@ export class Rdv implements OnInit {
     this.notifVisible = true;
     setTimeout(() => this.notifVisible = false, 3000);
   }
-}
+
+  // ✅ Normalise les heures pour éviter les bugs avec "9:00:" au lieu de "09:00"
+  padTime(t: string): string {
+    if (!t) return '';
+    const parts = t.split(':');
+    if (parts.length >= 2) {
+      return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+    }
+    return t;
+  }
+} 
