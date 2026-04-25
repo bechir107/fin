@@ -10,7 +10,9 @@ import { Espacep } from './espacep/espacep';
 import { Rdvp } from './rdvp/rdvp';
 import { Profil } from './profil/profil';
 import { CallbackComponent } from './callback/callback.component'
+import { ForgotPassword } from './forgot-password/forgot-password';
 export const routes: Routes = [
+  {path: 'forgot-password', component: ForgotPassword},
    { path: 'callback', component: CallbackComponent },
   { path: '', component: Acceuil },
    { path: 'createacc', component: Createacc },

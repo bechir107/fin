@@ -7,7 +7,8 @@
         <div class="brand">
           <svg viewBox="0 0 48 48" fill="none" class="brand-icon">
             <path d="M10 38C10 38 14 18 36 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M36 10C36 10 40 26 28 35C21 40 14 38 10 38" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M36 10C36 10 40 26 28 35C21 40 14 38 10 38" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <div class="brand-name">Dr. Farouk <em>Mrad</em></div>
         </div>
@@ -15,113 +16,241 @@
         <p>Renseignez vos informations pour accéder à votre espace</p>
       </div>
 
-      <!-- Google SSO -->
-      <button class="sso-btn" id="googleBtn" type="button">
-        <img src="https://www.google.com/favicon.ico" alt="Google" class="sso-btn__icon" width="16" height="16" />
+
+      <!-- Bouton Google -->
+      <button type="button" class="sso-btn" (click)="loginWithGoogle()">
+        <svg viewBox="0 0 48 48" width="20" height="20">
+          <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.2l6.8-6.8C35.9 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.6 13.3l7.9 6.1C12.4 13 17.7 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.1z"/>
+          <path fill="#FBBC05" d="M10.5 28.6A14.8 14.8 0 019.5 24c0-1.6.3-3.2.8-4.6L2.4 13.3A23.9 23.9 0 000 24c0 3.8.9 7.4 2.6 10.6l7.9-6z"/>
+          <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.2-8.3 2.2-6.3 0-11.6-4.2-13.5-9.9l-7.9 6C6.6 42.6 14.6 48 24 48z"/>
+        </svg>
         <span>S'inscrire avec Google</span>
       </button>
 
       <div class="divider">
         <hr /><span>ou avec votre e-mail</span><hr />
       </div>
+     
 
-      <form id="signupForm" novalidate>
-        <div class="field-row">
-          <div class="field">
-            <label class="field-label">Prénom <span>*</span></label>
-            <div class="inp-wrap">
-              <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
-                <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="1.4"/>
-                <path d="M3 18c0-3.5 3-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-              </svg>
-              <input type="text" name="prenom" placeholder="Jean" required />
-            </div>
-          </div>
-          <div class="field">
-            <label class="field-label">Nom <span>*</span></label>
-            <div class="inp-wrap">
-              <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
-                <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="1.4"/>
-                <path d="M3 18c0-3.5 3-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-              </svg>
-              <input type="text" name="nom" placeholder="Dupont" required />
-            </div>
-          </div>
-        </div>
+      <form (ngSubmit)="onSubmit()" #signupForm="ngForm" novalidate>
 
+  
+        <!-- Prénom + Nom -->
+<div class="field-row">
+  <div class="field">
+    <label class="field-label">Prénom <span style="color:#e53935">*</span></label>
+    <div class="inp-wrap" [class.inp-error]="prenom.invalid && prenom.touched">
+      <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M3 18c0-3.5 3-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <input type="text" name="prenom" [(ngModel)]="user.prenom" #prenom="ngModel"
+         required minlength="2"
+        pattern="[a-zA-ZÀ-ÿ\s\-]+" />
+    </div>
+    <span class="err-msg" *ngIf="prenom.touched && prenom.errors?.['required']">
+      Prénom requis
+    </span>
+    <span class="err-msg" *ngIf="prenom.touched && prenom.errors?.['minlength']">
+      Minimum 2 caractères
+    </span>
+    <span class="err-msg" *ngIf="prenom.touched && prenom.errors?.['pattern']">
+      Lettres uniquement (pas de chiffres)
+    </span>
+  </div>
+
+  <div class="field">
+    <label class="field-label">Nom <span style="color:#e53935">*</span></label>
+    <div class="inp-wrap" [class.inp-error]="nom.invalid && nom.touched">
+      <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M3 18c0-3.5 3-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <input type="text" name="nom" [(ngModel)]="user.nom" #nom="ngModel"
+         required minlength="2"
+        pattern="[a-zA-ZÀ-ÿ\s\-]+" />
+    </div>
+    <span class="err-msg" *ngIf="nom.touched && nom.errors?.['required']">
+      Nom requis
+    </span>
+    <span class="err-msg" *ngIf="nom.touched && nom.errors?.['minlength']">
+      Minimum 2 caractères
+    </span>
+    <span class="err-msg" *ngIf="nom.touched && nom.errors?.['pattern']">
+      Lettres uniquement (pas de chiffres)
+    </span>
+  </div>
+</div>
+
+        <!-- Email -->
         <div class="field">
-          <label class="field-label">Adresse e-mail <span>*</span></label>
-          <div class="inp-wrap">
-            <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
-              <rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
-              <path d="M2 7l8 5 8-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-            </svg>
-            <input type="email" name="email" placeholder="jean.dupont@email.com" required />
-          </div>
-        </div>
+  <label class="field-label">Adresse e-mail <span style="color:#e53935">*</span></label>
+  <div class="inp-wrap" [class.inp-error]="(email.invalid && email.touched) || emailExists">
+    <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
+      <rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M2 7l8 5 8-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+    </svg>
+    <input type="email" name="email" [(ngModel)]="user.email" #email="ngModel"
+      placeholder=".....@...." required email
+      (blur)="checkEmail()" />
 
+    <!-- Spinner pendant la vérification -->
+    <span *ngIf="checkingEmail" style="position:absolute; right:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+        style="animation: spin 0.8s linear infinite;">
+        <circle cx="12" cy="12" r="10" stroke="#ccc" stroke-width="3"/>
+        <path d="M12 2a10 10 0 0 1 10 10" stroke="#2e7d32" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </span>
+  </div>
+
+  
+  
+</div>
+        <!-- Téléphone + Date de naissance -->
         <div class="field-row">
           <div class="field">
-            <label class="field-label">Téléphone <span>*</span></label>
-            <div class="inp-wrap">
+            <label class="field-label">Téléphone <span style="color:#e53935">*</span></label>
+            <div class="inp-wrap" [class.inp-error]="telephone.invalid && telephone.touched">
               <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
                 <path d="M5 4h10v12H5z" stroke="currentColor" stroke-width="1.4"/>
                 <path d="M9 14h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
               </svg>
-              <input type="tel" name="telephone" placeholder="06 12 34 56 78" required />
+              <input type="tel" name="telephone" [(ngModel)]="user.telephone" #telephone="ngModel"
+                placeholder="12 34 56 78" required pattern="[0-9+\s]{8,15}"/>
             </div>
+            <span class="err-msg" *ngIf="telephone.invalid && telephone.touched">
+              Numéro invalide (8-15 chiffres)
+            </span>
           </div>
+
           <div class="field">
-            <label class="field-label">Date de naissance <span>*</span></label>
-            <div class="inp-wrap">
+            <label class="field-label">Date de naissance <span style="color:#e53935">*</span></label>
+            <div class="inp-wrap" [class.inp-error]="dateNaissance.invalid && dateNaissance.touched">
               <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
                 <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.4"/>
                 <path d="M3 8h14M7 2v4M13 2v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
               </svg>
-              <input type="date" name="dateNaissance" required />
+              <input type="date" name="dateNaissance" [(ngModel)]="user.dateNaissance" #dateNaissance="ngModel"
+                required [max]="maxDate"/>
             </div>
+            <span class="err-msg" *ngIf="dateNaissance.invalid && dateNaissance.touched">
+              Date de naissance requise
+            </span>
+            <span class="err-msg" *ngIf="ageError">
+              Vous devez avoir au moins 5 ans
+            </span>
           </div>
         </div>
 
+        <!-- Mot de passe -->
         <div class="field">
-          <label class="field-label">Mot de passe <span>*</span></label>
-          <div class="inp-wrap">
+          <label class="field-label">Mot de passe <span style="color:#e53935">*</span></label>
+          <div class="inp-wrap" [class.inp-error]="password.invalid && password.touched">
             <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
               <rect x="4" y="9" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.4"/>
               <path d="M7 9V6.5a3 3 0 016 0V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
             </svg>
-            <input type="password" name="password" placeholder="••••••••" required minlength="8" />
+            <input [type]="showPassword ? 'text' : 'password'" name="password"
+              [(ngModel)]="user.password" #password="ngModel"
+              placeholder="••••••••" required minlength="6"/>
+            <button type="button" class="eye-btn" (click)="showPassword = !showPassword">
+              <svg *ngIf="!showPassword" viewBox="0 0 20 20" fill="none">
+                <path d="M2 10s3-5.5 8-5.5S18 10 18 10s-3 5.5-8 5.5S2 10 2 10z" stroke="currentColor" stroke-width="1.4"/>
+                <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.4"/>
+              </svg>
+              <svg *ngIf="showPassword" viewBox="0 0 20 20" fill="none">
+                <path d="M3 3l14 14M8.5 8.5A2.5 2.5 0 0013 12M5.5 5.5C3.5 7 2 10 2 10s3 6 8 6c1.5 0 2.9-.4 4.1-1.1M8 4.1A6.7 6.7 0 0110 4c5 0 8 6 8 6s-.9 1.8-2.5 3.3"
+                  stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </button>
           </div>
+          <span class="err-msg" *ngIf="password.invalid && password.touched">
+            Mot de passe requis (min. 6 caractères)
+          </span>
         </div>
 
+        <!-- Confirmer mot de passe -->
         <div class="field">
-          <label class="field-label">Confirmer le mot de passe <span>*</span></label>
-          <div class="inp-wrap">
+          <label class="field-label">Confirmer le mot de passe <span style="color:#e53935">*</span></label>
+          <div class="inp-wrap" [class.inp-error]="confirmPassword.touched && user.confirmPassword !== user.password">
             <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
               <rect x="4" y="9" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.4"/>
               <path d="M7 9V6.5a3 3 0 016 0V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
             </svg>
-            <input type="password" name="confirmPassword" placeholder="••••••••" required />
+            <input type="password" name="confirmPassword"
+              [(ngModel)]="user.confirmPassword" #confirmPassword="ngModel"
+              placeholder="••••••••" required/>
           </div>
+          <span class="err-msg" *ngIf="confirmPassword.touched && user.confirmPassword !== user.password">
+            Les mots de passe ne correspondent pas
+          </span>
         </div>
 
+        <!-- CGU -->
         <div class="row-opts" style="margin-top: 24px;">
           <label class="check-label">
-            <input type="checkbox" required style="position:absolute; opacity:0;"/>
-            <div class="custom-cb">
-              <svg viewBox="0 0 10 10" fill="none">
-                <path d="M2 5l2.5 2.5L8 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <div class="custom-cb" [class.checked]="user.acceptTerms"
+              (click)="user.acceptTerms = !user.acceptTerms">
+              <svg *ngIf="user.acceptTerms" viewBox="0 0 10 10" fill="none">
+                <path d="M2 5l2.5 2.5L8 2.5" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
             <span>J'accepte les <a href="#" class="forgot-link">Conditions d'utilisation</a>.</span>
           </label>
         </div>
+        <span class="err-msg" *ngIf="termsError">
+          Vous devez accepter les conditions
+        </span>
 
-        <button type="submit" class="btn-main">
-          S'inscrire
+        <!-- Bouton -->
+        <button type="submit" class="btn-main" [disabled]="loading">
+          <span *ngIf="!loading" class="btn-inner">
+            <svg viewBox="0 0 20 20" fill="none" width="18" height="18">
+              <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.6"
+                stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            S'inscrire
+          </span>
+          <span *ngIf="loading" class="loading-dots">
+            <span></span><span></span><span></span>
+          </span>
         </button>
 
       </form>
     </div>
+  </div>
+</div>
+
+<!-- Modal Erreur -->
+<div class="modal-overlay" *ngIf="errorMsg">
+  <div class="modal modal-error">
+    <div class="modal__icon error-icon">
+      <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+        <path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h2 class="modal__title">Erreur d'inscription</h2>
+    <p class="modal__body">{{ errorMsg }}</p>
+    <button class="modal__btn error-btn" type="button" (click)="errorMsg = ''">Réessayer</button>
+  </div>
+</div>
+
+<!-- Modal Succès -->
+<!-- Modal Succès -->
+<div class="modal-overlay" *ngIf="successMsg">
+  <div class="modal modal-success">
+    <div class="modal__icon success-icon">
+      <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
+        <path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h2 class="modal__title">Compte créé !</h2>
+    <p class="modal__body">{{ successMsg }}</p>
+    <div class="modal-loader"></div>
   </div>
 </div>

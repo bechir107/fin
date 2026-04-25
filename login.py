@@ -17,13 +17,14 @@ def login():
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
 
-        if not user:
-            return jsonify({'message': 'Email introuvable'}), 401
+    if not user:
+     return jsonify({'message': 'Email introuvable'}), 401
 
-        if user[2] != password:
+    if user[2] != password:  # ← index [2] pour le password
+
             return jsonify({'message': 'Mot de passe incorrect'}), 401
-        return jsonify({
-            'message': 'Connexion réussie',
+            return jsonify({
+                'message': 'Connexion réussie',
             'email':   user[1],
             'role':    user[3]   
         }), 200
