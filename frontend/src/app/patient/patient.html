@@ -1,0 +1,252 @@
+<div class="patient-module">
+  <div class="page-container">
+    <!-- EN-TÊTE -->
+    <div class="page-header glass-card">
+      <div class="header-text">
+        <h1 class="page-title">Mes Patients</h1>
+        <p class="page-sub">Gérez vos dossiers et suivis patients</p>
+      </div>
+
+      <div class="header-actions">
+        <div class="search-box">
+          <span class="search-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </span>
+          <input type="text" [(ngModel)]="chercher" (keyup.enter)="filterPatients()" placeholder="Rechercher un patient...">
+        </div>
+        <button class="btn-primary" (click)="getPatients()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </button>
+        <button class="btn-primary" (click)="openForm()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ajouter patient
+        </button>
+      </div>
+    </div>
+
+    <!-- STATS RAPIDES -->
+    <div class="stats-grid">
+      <div class="stat-card glass-card">
+        <div class="stat-icon icon-blue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-val">{{ (fifi || []).length }}</span>
+          <span class="stat-label">Total Patients</span>
+        </div>
+      </div>
+      <div class="stat-card glass-card">
+        <div class="stat-icon icon-rose">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-val">{{ countBySexe('Femme') }}</span>
+          <span class="stat-label">Femmes</span>
+        </div>
+      </div>
+      <div class="stat-card glass-card">
+        <div class="stat-icon icon-blue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-val">{{ countBySexe('Homme') }}</span>
+          <span class="stat-label">Hommes</span>
+        </div>
+      </div>
+      <div class="stat-card glass-card">
+        <div class="stat-icon icon-green">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-val">{{ countWithObjectif() }}</span>
+          <span class="stat-label">Objectifs fixés</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RÉSULTAT DE RECHERCHE -->
+    <div class="section-header" *ngIf="affiche && patients.length">
+      <h2 class="section-title">Résultats de recherche</h2>
+      <span class="badge">{{patients.length}} trouvé(s)</span>
+    </div>
+
+    <div class="patients-grid" *ngIf="affiche && patients.length">
+      <div class="patient-card glass-card" *ngFor="let p of patients">
+        <div class="card-band" [ngClass]="p.sexe === 'Femme' ? 'band-f' : 'band-m'"></div>
+        <div class="card-inner">
+          <div class="card-top">
+            <div class="avatar-wrap">
+              <div class="avatar" [ngClass]="p.sexe === 'Femme' ? 'avatar-f' : 'avatar-m'">
+                {{ p.prenom?.[0] }}{{ p.nom?.[0] }}
+              </div>
+              <div>
+                <h3 class="patient-name">{{ p.prenom }} {{ p.nom }}</h3>
+                <span class="patient-email">{{ p.email || 'Email non défini' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-stats">
+            <div class="cs-item">
+              <span class="cs-val">{{ p.objectif || '—' }}</span>
+              <span class="cs-key">Objectif</span>
+            </div>
+          </div>
+          <div class="card-tags">
+            <span class="tag tag-act" *ngIf="p.maladie_chronique">{{ p.maladie_chronique }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state glass-card" *ngIf="affiche && !patients.length">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" color="var(--text-muted)"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <p>Aucun patient trouvé pour "<strong>{{chercher}}</strong>".</p>
+    </div>
+
+    <!-- LISTE DES PATIENTS (DEPLIABLE) -->
+    <div class="section-header" *ngIf="!affiche">
+      <h2 class="section-title">Tous les patients</h2>
+      <span class="badge">{{ (fifi || []).length }} patients</span>
+    </div>
+
+    <div class="cards-container" *ngIf="!affiche">
+      <div class="card glass-card" *ngFor="let p of fifi; let i = index" [class.active]="selectedIndex === i">
+        <div class="card-header" (click)="toggleCard(i)">
+          <div class="avatar" [ngClass]="p.sexe === 'Femme' ? 'avatar-f' : 'avatar-m'">
+            {{ p.prenom?.[0] }}{{ p.nom?.[0] }}
+          </div>
+          <div class="info">
+            <h3 class="patient-name" style="margin:0;">{{ p.prenom }} {{ p.nom }}</h3>
+            <span class="gender-badge">{{ p.sexe === 'Femme' ? '♀' : '♂' }}</span>
+          </div>
+          <div class="action-buttons">
+            <button class="btn-outline" (click)="$event.stopPropagation(); acces(p.email)">Envoyer accès</button>
+            <button class="btn-danger" (click)="$event.stopPropagation(); suppprimer(p.id)">Supprimer</button>
+          </div>
+        </div>
+
+        <div class="details" *ngIf="selectedIndex === i">
+          <div class="details-grid">
+            <div><span>Email</span><p>{{ p.email }}</p></div>
+            <div><span>Téléphone</span><p>{{ p.telephone || '—' }}</p></div>
+            <div><span>Date de naissance</span><p>{{ p.ddn ? (p.ddn | date:'dd/MM/yyyy') : '—' }}</p></div>
+            <div><span>Sexe</span><p>{{ p.sexe || '—' }}</p></div>
+            <div><span>Adresse</span><p>{{ p.adresse || '—' }}</p></div>
+            <div><span>Taille (cm)</span><p>{{ p.taille || '—' }}</p></div>
+            <div><span>Allergies</span><p>{{ p.allergie || '—' }}</p></div>
+            <div><span>Maladie Chronique</span><p>{{ p.maladie_chronique || '—' }}</p></div>
+            <div><span>Objectif</span><p>{{ p.objectif || '—' }}</p></div>
+            <div><span>Date d'inscription</span><p>{{ p.ddc ? (p.ddc | date:'dd/MM/yyyy') : '—' }}</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL D'AJOUT DE PATIENT -->
+  <div class="modal-overlay" [class.open]="showForm" (click)="onOverlayClick($event)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Nouveau Patient</h2>
+        <button class="modal-close" (click)="closeForm()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="modal-tabs">
+        <button class="tab-btn" [class.active]="activeTab === 'info'" (click)="activeTab = 'info'">Infos personnelles</button>
+        <button class="tab-btn" [class.active]="activeTab === 'sante'" (click)="activeTab = 'sante'">Santé & Objectifs</button>
+      </div>
+
+      <form #f="ngForm" (ngSubmit)="ajouterP(f)">
+        <div class="modal-body">
+          <!-- ONGLET 1: INFO -->
+          <div class="form-section" [class.active]="activeTab === 'info'">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Nom <span style="color:red">*</span></label>
+                <input type="text" name="nom" [(ngModel)]="nom" required placeholder="Ex: Dupont">
+              </div>
+              <div class="form-group">
+                <label>Prénom <span style="color:red">*</span></label>
+                <input type="text" name="prenom" [(ngModel)]="prenom" required placeholder="Ex: Jean">
+              </div>
+              <div class="form-group">
+                <label>Date de naissance <span style="color:red">*</span></label>
+                <input type="date" name="ddn" [(ngModel)]="ddn" required>
+              </div>
+              <div class="form-group">
+                <label>Sexe <span style="color:red">*</span></label>
+                <select name="sexe" [(ngModel)]="sexe" required>
+                  <option value="" disabled selected>Sélectionner...</option>
+                  <option value="Homme">Homme</option>
+                  <option value="Femme">Femme</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Adresse e-mail <span style="color:red">*</span></label>
+                <input type="email" name="email" [(ngModel)]="email" required placeholder="patient@email.com">
+              </div>
+              <div class="form-group">
+                <label>Mot de passe provisoire <span style="color:red">*</span></label>
+                <input type="password" name="password" [(ngModel)]="password" required placeholder="••••••••">
+              </div>
+              <div class="form-group full">
+                <label>Numéro de téléphone <span style="color:red">*</span></label>
+                <input type="tel" name="telephone" [(ngModel)]="telephone" required placeholder="+33 6 12 34 56 78">
+              </div>
+              <div class="form-group full">
+                <label>Adresse postale <span style="color:red">*</span></label>
+                <input type="text" name="adresse" [(ngModel)]="adresse" required placeholder="123 Rue de la Santé...">
+              </div>
+            </div>
+            
+            <div class="modal-footer">
+              <button type="button" class="btn-cancel" (click)="closeForm()">Annuler</button>
+              <button type="button" class="btn-primary" (click)="suivant()">Suivant &rarr;</button>
+            </div>
+          </div>
+
+          <!-- ONGLET 2: SANTE -->
+          <div class="form-section" [class.active]="activeTab === 'sante'">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Taille (cm) <span style="color:red">*</span></label>
+                <input type="number" name="taille" [(ngModel)]="taille" required placeholder="170">
+              </div>
+              <div class="form-group">
+                <label>Allergies</label>
+                <input type="text" name="allergie" [(ngModel)]="allergie" placeholder="Arachides, lactose... (ou 'Aucune')">
+              </div>
+              <div class="form-group full">
+                <label>Maladie Chronique</label>
+                <input type="text" name="maladie_chronique" [(ngModel)]="maladie_chronique" placeholder="Diabète, Hypertension... (ou 'Aucune')">
+              </div>
+              <div class="form-group full">
+                <label>Objectif Nutritionnel <span style="color:red">*</span></label>
+                <select name="objectif" [(ngModel)]="objectif" required>
+                  <option value="" disabled selected>Sélectionner l'objectif visé</option>
+                  <option value="Perte de poids">Perte de poids</option>
+                  <option value="Prise de masse">Prise de masse</option>
+                  <option value="Maintien">Maintien du poids</option>
+                  <option value="Santé générale">Amélioration de la santé générale</option>
+                  <option value="Performance">Performance sportive</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn-cancel" (click)="activeTab = 'info'">&larr; Retour</button>
+              <button type="submit" class="btn-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Enregistrer le patient
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

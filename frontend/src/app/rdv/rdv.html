@@ -1,0 +1,156 @@
+<div class="page-container">
+
+  <!-- EN-TÊTE -->
+  <div class="page-header glass-card">
+    <div class="header-text">
+      <h1 class="page-title">Bonjour, Dr. Martin 👋</h1>
+      <p class="page-sub">Voici vos rendez-vous du jour</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-primary" (click)="afficher()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- STATISTIQUES -->
+  <div class="stats-grid">
+    <div class="stat-card glass-card">
+      <div class="stat-icon icon-blue">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <p class="stat-val">{{ data.length }}</p>
+        <p class="stat-label">Patients aujourd'hui</p>
+      </div>
+    </div>
+    
+    <div class="stat-card glass-card">
+      <div class="stat-icon icon-green">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <p class="stat-val">0</p>
+        <p class="stat-label">Consultations terminées</p>
+      </div>
+    </div>
+
+    <div class="stat-card glass-card">
+      <div class="stat-icon icon-gold">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <p class="stat-val">{{ data.length }}</p>
+        <p class="stat-label">En attente</p>
+      </div>
+    </div>
+
+    <div class="stat-card glass-card">
+      <div class="stat-icon icon-purple">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <p class="stat-val">0</p>
+        <p class="stat-label">RDV annulés</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TITRE DE SECTION -->
+  <div class="section-header">
+    <h2 class="section-title">Rendez-vous du jour</h2>
+    <span class="badge">{{ data.length }} patients</span>
+  </div>
+
+  <!-- LISTE DES RENDEZ-VOUS -->
+  <div class="list-container">
+    <div *ngFor="let p of data; let i = index" class="list-card glass-card" [style.animation-delay]="i * 60 + 'ms'">
+      
+      <div class="avatar-box">
+        {{ p.nom[0] }}{{ p.prenom[0] }}
+      </div>
+
+      <div class="info-col">
+        <h3 class="person-name">{{ p.nom }} {{ p.prenom }}</h3>
+        <span class="person-id">Patient #{{ p.id }}</span>
+      </div>
+
+      <div class="tag-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+        </svg>
+        {{ p.hrdv }}
+      </div>
+
+      <div class="tag-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+        {{ p.date_rdv | date:'dd/MM/YYYY' }}
+      </div>
+
+      <div class="status-col">
+        <span class="status-badge waiting">En attente</span>
+      </div>
+
+      <div class="action-col">
+        <button class="btn-outline">
+          Voir dossier
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ÉTAT VIDE -->
+    <div *ngIf="data.length === 0" class="empty-state glass-card">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+      </svg>
+      <p>Aucun rendez-vous pour aujourd'hui</p>
+      <span>Cliquez sur Actualiser pour charger les données</span>
+    </div>
+  </div>
+
+  <!-- GRAPHIQUES -->
+  <div class="charts-grid">
+    <div class="chart-wrapper glass-card">
+      <div class="chart-header">
+        <div>
+          <h3 class="chart-title">Patients cette semaine</h3>
+          <p class="chart-sub">Rendez-vous des 7 derniers jours</p>
+        </div>
+        <span class="badge badge-green">7 jours passés</span>
+      </div>
+      <div class="chart-body">
+        <canvas #weekChart></canvas>
+      </div>
+    </div>
+
+    <div class="chart-wrapper glass-card">
+      <div class="chart-header">
+        <div>
+          <h3 class="chart-title">Rendez-vous à venir</h3>
+          <p class="chart-sub">Aujourd'hui + 6 prochains jours</p>
+        </div>
+        <span class="badge badge-blue">À venir</span>
+      </div>
+      <div class="chart-body">
+        <canvas #futureChart></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>

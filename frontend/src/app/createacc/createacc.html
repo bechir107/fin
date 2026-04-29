@@ -18,7 +18,7 @@
 
 
       <!-- Bouton Google -->
-      <button type="button" class="sso-btn" (click)="loginWithGoogle()">
+      <button type="button" class="sso-btn">
         <svg viewBox="0 0 48 48" width="20" height="20">
           <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.2l6.8-6.8C35.9 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.6 13.3l7.9 6.1C12.4 13 17.7 9.5 24 9.5z"/>
           <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.1z"/>
@@ -127,15 +127,15 @@
 
           <div class="field">
             <label class="field-label">Date de naissance <span style="color:#e53935">*</span></label>
-            <div class="inp-wrap" [class.inp-error]="dateNaissance.invalid && dateNaissance.touched">
+            <div class="inp-wrap" [class.inp-error]="ddn.invalid && ddn.touched">
               <svg class="inp-icon" viewBox="0 0 20 20" fill="none">
                 <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.4"/>
                 <path d="M3 8h14M7 2v4M13 2v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
               </svg>
-              <input type="date" name="dateNaissance" [(ngModel)]="user.dateNaissance" #dateNaissance="ngModel"
+              <input type="date" name="dateNaissance" [(ngModel)]="user.ddn" #ddn="ngModel"
                 required [max]="maxDate"/>
             </div>
-            <span class="err-msg" *ngIf="dateNaissance.invalid && dateNaissance.touched">
+            <span class="err-msg" *ngIf="ddn.invalid && ddn.touched">
               Date de naissance requise
             </span>
             <span class="err-msg" *ngIf="ageError">

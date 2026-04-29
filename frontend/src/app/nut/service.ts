@@ -41,8 +41,10 @@ accesP(email: string) {
 getHeures(datehdv: string){
   return this.http.get<string[]>(`http://127.0.0.1:5000/heures/${datehdv}`);
 }
-ajouterpatient(nom:string,prenom: string,age:string,sexe:string,email: string,password:string,tel: string, adress: string, note_interne: string,taille:string, poids_actuiele: string,allergie:string, Conditions_me: string, niveau_act: string, objectif: string,description:string): Observable<any> {
-    return this.http.post(`http://127.0.0.1:5000/ajoutep`,{nom,prenom,age,sexe,email, password,tel, adress, note_interne,taille, poids_actuiele, allergie,Conditions_me, niveau_act, objectif,description});
+  ajouterpatient(nom: string, prenom: string, ddn: string, sexe: string, email: string, password: string, telephone: string, adresse: string, taille: string, allergie: string, maladie_chronique: string, objectif: string, ddc: string): Observable<any> {
+    return this.http.post(`http://127.0.0.1:5000/createPatient`, {
+      nom, prenom, ddn, sexe, email, password, telephone, adresse, taille, allergie, maladie_chronique, objectif, ddc
+    });
   }
   getPatient(chercher:string){
      return this.http.get<string[]>(`http://127.0.0.1:5000/patientex/${chercher}`);
