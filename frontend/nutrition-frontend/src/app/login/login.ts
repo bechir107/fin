@@ -75,6 +75,7 @@ export class Login {
         this.loading = false;
         if (res.message === 'Connexion réussie') {
           this.service.cuurrentUser = res;
+          try { localStorage.setItem('app_user', JSON.stringify(res)); } catch(e){}
           this.successMsg = 'Redirection vers votre espace...';
           this.cdr.detectChanges();
           setTimeout(() => {
@@ -97,6 +98,8 @@ export class Login {
           next: (res: any) => {
             this.loading = false;
             if (res.message === 'Connexion réussie') {
+              this.service.cuurrentUser = res;
+              try { localStorage.setItem('app_user', JSON.stringify(res)); } catch(e){}
               this.successMsg = 'Redirection vers le tableau de bord...';
               this.cdr.detectChanges();
               setTimeout(() => {

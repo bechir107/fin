@@ -1,11 +1,24 @@
+from dotenv import load_dotenv
+load_dotenv()  
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_mail import Mail, Message
 import MySQLdb
+import os
+import requests
+import chat_memory
+import ai_service
 
 
 app = Flask(__name__)
 CORS(app)
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
 
 
 app.config['MAIL_SERVER']         = 'smtp.gmail.com'
@@ -20,12 +33,22 @@ mail = Mail(app)  # ← UNE SEULE FOIS, après la config
 # ──────────────────────────────────────────────────────────────
 
 def get_db():
-    return MySQLdb.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="nutrition_db"
-    )
+    host = os.getenv('DB_HOST', '127.0.0.1')
+    user = os.getenv('DB_USER', 'root')
+    port = int(os.getenv('DB_PORT', '3306'))
+    passwd = os.getenv('DB_PASS', 'spanzo')
+    dbname = os.getenv('DB_NAME', 'nutrition_db')
+    # Try TCP connection first, fall back to unix socket if needed
+    try:
+        return MySQLdb.connect(host=host, user=user, port=port, passwd=passwd, db=dbname, connect_timeout=5)
+    except MySQLdb.OperationalError as e:
+        app.logger.warning('MySQL TCP connection failed: %s', e)
+        socket_path = os.getenv('DB_SOCKET', '/tmp/mysql.sock')
+        try:
+            return MySQLdb.connect(unix_socket=socket_path, user=user, passwd=passwd, db=dbname, connect_timeout=5)
+        except Exception:
+            app.logger.exception('MySQL connection failed (TCP and socket)')
+            raise
 @app.route('/loginUnified', methods=['POST'])
 def loginUnified():
     data     = request.get_json()
@@ -77,23 +100,46 @@ def login():
 
     db     = get_db()
     cursor = db.cursor()
+
+    # First try existing patient table
     cursor.execute("SELECT * FROM patient WHERE email = %s", (email,))
     user_by_email = cursor.fetchone()
 
-    if not user_by_email:
-        return jsonify({'message': 'Email introuvable'}), 401
+    if user_by_email:
+        # patient table uses `password` column at index 6 in this schema
+        if user_by_email[6] != password:
+            cursor.close()
+            db.close()
+            return jsonify({'message': 'Mot de passe incorrect'}), 401
+        cursor.close()
+        db.close()
+        return jsonify({
+            'message': 'Connexion réussie',
+            'nom':     user_by_email[1],
+            'prenom':  user_by_email[2],
+        }), 200
 
-    cursor.execute("SELECT * FROM patient WHERE email = %s AND password = %s", (email, password))
-    user = cursor.fetchone()
+    # Next, try nvpatient table (new patients). Column for password is `mot_de_passe`.
+    cursor.execute("SELECT prenom, nom, mot_de_passe FROM nvpatient WHERE email = %s", (email,))
+    nv = cursor.fetchone()
+    if nv:
+        prenom_nv, nom_nv, mot_de_passe = nv[0], nv[1], nv[2]
+        if mot_de_passe != password:
+            cursor.close()
+            db.close()
+            return jsonify({'message': 'Mot de passe incorrect'}), 401
+        cursor.close()
+        db.close()
+        return jsonify({
+            'message': 'Connexion réussie',
+            'nom':     nom_nv,
+            'prenom':  prenom_nv,
+        }), 200
 
-    if not user:
-        return jsonify({'message': 'Mot de passe incorrect'}), 401
-
-    return jsonify({
-        'message': 'Connexion réussie',
-        'nom':     user[1],
-        'prenom':  user[2],
-    }), 200
+    # Finally, not found in patient or nvpatient
+    cursor.close()
+    db.close()
+    return jsonify({'message': 'Email introuvable'}), 401
 
 
 @app.route('/loginNut', methods=['POST'])
@@ -337,6 +383,20 @@ def createPatient():
 
     db     = get_db()
     cursor = db.cursor()
+    # Ensure nvpatient table exists (some deployments use `patient` only)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS nvpatient (
+            id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+            prenom VARCHAR(255),
+            nom VARCHAR(255),
+            email VARCHAR(255) UNIQUE,
+            telephone VARCHAR(50),
+            date_naissance DATE,
+            mot_de_passe VARCHAR(255),
+            date_creation DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
+    # Now safe to check for existing email
     cursor.execute("SELECT id FROM nvpatient WHERE email = %s", (email,))
     if cursor.fetchone():
         cursor.close()
@@ -355,17 +415,119 @@ def createPatient():
 
 @app.route('/checkEmail/<email>', methods=['GET'])
 def checkEmail(email):
-    db     = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT id FROM nvpatient WHERE email = %s", (email,))
-    exists = cursor.fetchone() is not None
-    if not exists:
-        cursor.execute("SELECT id FROM patient WHERE email = %s", (email,))
+    db = None
+    cursor = None
+    try:
+        db     = get_db()
+        cursor = db.cursor()
+        cursor.execute("SELECT id FROM nvpatient WHERE email = %s", (email,))
         exists = cursor.fetchone() is not None
-    cursor.close()
-    db.close()
-    return jsonify({"exists": exists}), 200
+        if not exists:
+            cursor.execute("SELECT id FROM patient WHERE email = %s", (email,))
+            exists = cursor.fetchone() is not None
+        return jsonify({"exists": exists}), 200
+    except Exception as e:
+        app.logger.exception('checkEmail failed')
+        return jsonify({'message': str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
 
+
+@app.route('/dbstatus', methods=['GET'])
+def dbstatus():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('SELECT 1')
+        cursor.close()
+        db.close()
+        return jsonify({'db': 'ok'}), 200
+    except Exception as e:
+        app.logger.exception('DB status check failed')
+        return jsonify({'db': 'error', 'message': str(e)}), 500
+
+
+@app.route('/chat', methods=['POST', 'OPTIONS'])
+def chat():
+    """Simple chat endpoint that uses OpenAI Chat API."""
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
+    data = request.get_json() or {}
+    user = (data.get('user') or 'anonymous').strip()
+    message = data.get('message', '').strip()
+
+    if not message:
+        return jsonify({'error': 'Message is required'}), 400
+
+    # Improveable system prompt for a nutritionist assistant
+    system_prompt = (
+        "You are NutriCare, an expert clinical nutritionist and dietitian. "
+        "Respond concisely and helpfully to user questions about nutrition, diets, allergies, "
+        "meal planning, and general healthy eating. Ask clarifying questions when necessary, "
+        "be mindful of medical conditions and allergies, and avoid giving prescriptive medical "
+        "advice—recommend consulting a healthcare professional when appropriate. Provide practical, "
+        "evidence-based suggestions and clear, actionable steps the user can follow."
+    )
+
+    # load user's memory (list of messages)
+    memory = chat_memory.get_messages(user)
+
+    # build messages for the model: system + memory + new user message
+    messages = [{"role": "system", "content": system_prompt}]
+    # ensure memory items are in the form {role, content}
+    for m in memory:
+        messages.append({"role": m.get('role', 'user'), "content": m.get('content', '')})
+    messages.append({"role": "user", "content": message})
+
+    openai_key = os.getenv('OPENAI_API_KEY')
+    if not openai_key:
+        return jsonify({'error': 'OPENAI_API_KEY not configured on server'}), 500
+
+    # Temporary disable memory for debugging
+    memory = [] 
+    
+    import json
+    try:
+        assistant_json_str = ai_service.get_nutrition_reply(user, message, memory)
+        print("======== OAI RAW RESPONSE ========")
+        print(assistant_json_str)
+        print("==================================")
+        try:
+            parsed = json.loads(assistant_json_str)
+            assistant_msg = parsed.get("response", "Désolé, je n'ai pas pu formuler ma réponse.")
+            suggestions = parsed.get("suggestions", [])
+        except json.JSONDecodeError:
+            assistant_msg = assistant_json_str
+            suggestions = []
+    except Exception as e:
+        app.logger.exception('AI service failed')
+        return jsonify({'error': 'AI service failed', 'detail': str(e)}), 502
+
+    # Memory intentionally disabled per user request
+    # try:
+    #     chat_memory.add_message(user, 'user', message)
+    #     if assistant_msg:
+    #         chat_memory.add_message(user, 'assistant', assistant_msg)
+    # except Exception:
+    #     app.logger.exception('Failed to update chat memory')
+
+    return jsonify({'reply': assistant_msg, 'suggestions': suggestions}), 200
+
+
+@app.route('/chat/clear', methods=['POST'])
+def clear_chat():
+    data = request.get_json() or {}
+    user = (data.get('user') or 'anonymous').strip()
+    try:
+        chat_memory.clear_user(user)
+        return jsonify({'message': 'Memory cleared'}), 200
+    except Exception as e:
+        app.logger.exception('Failed to clear memory')
+        return jsonify({'error': 'Failed to clear memory', 'detail': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5000, debug=True)

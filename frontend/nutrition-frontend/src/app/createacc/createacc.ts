@@ -28,7 +28,7 @@ export class Createacc {
   ) {}
   
   loginWithGoogle(): void {
-    this.authService.loginWithGoogle(); // ← remplacer l'alert
+   // this.authService.loginWithGoogle(); // ← remplacer l'alert
   }
 
   user = {

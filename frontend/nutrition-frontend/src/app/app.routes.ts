@@ -11,12 +11,15 @@ import { Rdvp } from './rdvp/rdvp';
 import { Profil } from './profil/profil';
 import { CallbackComponent } from './callback/callback.component'
 import { ForgotPassword } from './forgot-password/forgot-password';
+import { ChatFab } from './chat-fab/chat-fab';
 export const routes: Routes = [
   {path: 'forgot-password', component: ForgotPassword},
    { path: 'callback', component: CallbackComponent },
   { path: '', component: Acceuil },
    { path: 'createacc', component: Createacc },
   { path: 'login', component: Login },
+
+  {path:'chat', component: ChatFab},
   {path: 'dashboard',component: Dashboard, 
     children:[
          {path:'patient', component:PatientC},

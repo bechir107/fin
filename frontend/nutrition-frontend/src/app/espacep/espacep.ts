@@ -15,15 +15,21 @@ export class Espacep {
 
   constructor(private service: Service, private router: Router) {}
   ngOnInit() {
-
- const user = this.service.cuurrentUser;
- 
+    const user = this.service.cuurrentUser;
     if (user) {
       this.nom    = user.nom;
       this.prenom = user.prenom;
-     
-}
- console.log('Utilisateur connecté :', this.nom, this.prenom);
+    }
+    console.log('Utilisateur connecté :', this.nom, this.prenom);
+  }
+
+  logout() {
+    this.service.cuurrentUser = null;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('app_user');
+      localStorage.removeItem('google_user');
+    }
+    this.router.navigate(['/login']);
   }
 }
 

@@ -1,0 +1,9 @@
+<div class="fab-container" *ngIf="isVisible">
+	<button class="fab" (click)="toggle()">
+		💬
+	</button>
+
+	<div class="chat-panel" *ngIf="open">
+		<app-chat-window (close)="close()"></app-chat-window>
+	</div>
+</div>

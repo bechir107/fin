@@ -16,41 +16,41 @@ export class Service {
   errorMsg: String = '';
   cuurrentUser: any = null;
   supppatient(idp: number) {
-     return this.http.get<string[]>(`http://127.0.0.1:5000/supppatient/${idp}`);
+     return this.http.get<string[]>(`http://127.0.0.1:5001/supppatient/${idp}`);
    
   }
 
   login(email: string, password: string) {
-    return this.http.post('http://127.0.0.1:5000/login', { email, password });
+    return this.http.post('http://127.0.0.1:5001/login', { email, password });
   }
 
   getPatients() {
-    return this.http.get<any>('http://127.0.0.1:5000/patient');
+    return this.http.get<any>('http://127.0.0.1:5001/patient');
   } 
 
   rondv(nom:string,prenom:string,email:string,date:string,hrdv:string){
-   return this.http.post('http://127.0.0.1:5000/prendrerdv',{nom,prenom,email,date,hrdv})
+   return this.http.post('http://127.0.0.1:5001/prendrerdv',{nom,prenom,email,date,hrdv})
   
 }
 accesP(email: string) {
-  return this.http.get(`http://127.0.0.1:5000/accesP/${email}`);
+  return this.http.get(`http://127.0.0.1:5001/accesP/${email}`);
 }
 
 
 
 getHeures(datehdv: string){
-  return this.http.get<string[]>(`http://127.0.0.1:5000/heures/${datehdv}`);
+  return this.http.get<string[]>(`http://127.0.0.1:5001/heures/${datehdv}`);
 }
 ajouterpatient(nom:string,prenom: string,age:string,sexe:string,email: string,password:string,tel: string, adress: string, note_interne: string,taille:string, poids_actuiele: string,allergie:string, Conditions_me: string, niveau_act: string, objectif: string,description:string): Observable<any> {
-    return this.http.post(`http://127.0.0.1:5000/ajoutep`,{nom,prenom,age,sexe,email, password,tel, adress, note_interne,taille, poids_actuiele, allergie,Conditions_me, niveau_act, objectif,description});
+    return this.http.post(`http://127.0.0.1:5001/ajoutep`,{nom,prenom,age,sexe,email, password,tel, adress, note_interne,taille, poids_actuiele, allergie,Conditions_me, niveau_act, objectif,description});
   }
   getPatient(chercher:string){
-     return this.http.get<string[]>(`http://127.0.0.1:5000/patientex/${chercher}`);
+     return this.http.get<string[]>(`http://127.0.0.1:5001/patientex/${chercher}`);
   }
  getallPatients(){
-  return this.http.get<any>(`http://127.0.0.1:5000/allpatient`);
+  return this.http.get<any>(`http://127.0.0.1:5001/allpatient`);
 }
  loginNut(email: string, password: string) {
-       return this.http.post(`http://127.0.0.1:5000/loginNut`, { email, password })}
+       return this.http.post(`http://127.0.0.1:5001/loginNut`, { email, password })}
 }
 
