@@ -1,4 +1,5 @@
-import { Injectable, inject, NgZone } from '@angular/core';
+import { Injectable, inject, NgZone, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
@@ -15,6 +16,7 @@ export class AuthService {
   private router = inject(Router);
   private ngZone = inject(NgZone);
   private http   = inject(HttpClient);
+  private platformId = inject(PLATFORM_ID);
 
   private readonly CLIENT_ID = '722639722963-42jql8upidibj8rs86ktuobnnfha1pud.apps.googleusercontent.com';
   private readonly USER_KEY  = 'google_user';
@@ -46,7 +48,9 @@ export class AuthService {
       token: credential,
     };
 
-    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    }
 
     // Retourne dans la zone Angular pour la navigation
     this.ngZone.run(() => {
@@ -61,18 +65,22 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(this.USER_KEY);
-    if (typeof window !== 'undefined' && (window as any).google) {
-      (window as any).google.accounts.id.disableAutoSelect();
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.USER_KEY);
+      if ((window as any).google) {
+        (window as any).google.accounts.id.disableAutoSelect();
+      }
     }
     this.router.navigate(['/login']);
   }
 
   get isLoggedIn(): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
     return !!localStorage.getItem(this.USER_KEY);
   }
 
   get user(): GoogleUser | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
     const data = localStorage.getItem(this.USER_KEY);
     return data ? JSON.parse(data) : null;
   }

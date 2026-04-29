@@ -1,0 +1,213 @@
+.calculateur-section {
+  padding: 120px 20px 80px;
+  background: radial-gradient(circle at top right, var(--green-light), transparent 40%),
+              radial-gradient(circle at bottom left, var(--gold-light), transparent 40%);
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.header-content {
+  margin-bottom: 50px;
+}
+
+.header-content h2 {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  color: var(--text-mid);
+  font-size: 1.2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.calculator-wrapper {
+  padding: 40px;
+  animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 40px;
+  background: var(--bg-light);
+  padding: 6px;
+  border-radius: 16px;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tabs button.active {
+  background: var(--white);
+  color: var(--green-deep);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group.full-width {
+  grid-column: span 2;
+}
+
+.input-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  margin-left: 4px;
+}
+
+.input-group input, .input-group select {
+  padding: 16px;
+  border: 2px solid var(--border-subtle);
+  border-radius: 14px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: var(--bg-light);
+}
+
+.input-group input:focus, .input-group select:focus {
+  outline: none;
+  border-color: var(--green-mid);
+  background: var(--white);
+  box-shadow: 0 0 0 4px var(--green-light);
+}
+
+.result-card {
+  margin-top: 40px;
+  padding: 30px;
+  background: var(--green-light);
+  border-radius: 20px;
+  text-align: center;
+  animation: fadeSlideUp 0.5s ease;
+}
+
+.result-card h3 {
+  font-family: var(--font-display);
+  color: var(--green-deep);
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+
+.result-card h3 span {
+  font-size: 2.5rem;
+  display: block;
+  font-weight: 800;
+}
+
+.category {
+  font-weight: 700;
+  padding: 6px 16px;
+  background: var(--white);
+  border-radius: 100px;
+  display: inline-block;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+  color: var(--green-deep);
+}
+
+.bmi-scale {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.scale-bar {
+  height: 8px;
+  background: linear-gradient(to right, #64B5F6, #81C784, #FFD54F, #E57373);
+  border-radius: 10px;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.indicator {
+  width: 16px;
+  height: 16px;
+  background: var(--white);
+  border: 3px solid var(--green-deep);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: left 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10%;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.calories-value {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  font-weight: 800;
+  color: var(--green-deep);
+  margin: 10px 0;
+}
+
+.calories-value span {
+  background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.info-text {
+  color: var(--text-mid);
+  font-size: 0.95rem;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.9); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.animate-pop {
+  animation: pop 0.4s easeOut;
+}
+
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .input-group.full-width {
+    grid-column: span 1;
+  }
+  .header-content h2 {
+    font-size: 2.5rem;
+  }
+  .calculator-wrapper {
+    padding: 24px;
+  }
+}

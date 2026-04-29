@@ -1,0 +1,41 @@
+<div class="chat-window">
+  <div class="chat-header">
+    <div class="header-info">
+      <span class="header-icon">🥗</span>
+      <div>
+        <div class="header-title">NutriCare</div>
+        <div class="header-subtitle">Votre Nutritionniste</div>
+      </div>
+    </div>
+    <button class="close" (click)="close.emit()">✕</button>
+  </div>
+
+  <div class="chat-body" #chatBody>
+    <div *ngFor="let m of messages" class="msg" [class.user]="m.from === 'user'" [class.bot]="m.from === 'bot'">
+      <div class="avatar" *ngIf="m.from === 'bot'">🥗</div>
+      <div class="bubble">
+        <div class="text">{{ m.text }}</div>
+        <div class="time">{{ m.time }}</div>
+      </div>
+    </div>
+    <div *ngIf="loading" class="msg bot typing-indicator">
+      <div class="avatar">🥗</div>
+      <div class="bubble">
+        <div class="text typing">NutriCare réfléchit<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="suggestions-container" *ngIf="currentSuggestions && currentSuggestions.length > 0">
+    <button class="suggestion-pill" *ngFor="let sugg of currentSuggestions" (click)="useSuggestion(sugg)" [disabled]="loading">
+      {{ sugg }}
+    </button>
+  </div>
+
+  <div class="chat-input">
+    <input type="text" [(ngModel)]="input" placeholder="Posez votre question nutrition..." (keyup.enter)="sendMessage()" [disabled]="loading" />
+    <button (click)="sendMessage()" [disabled]="loading">
+      {{ loading ? '⏳' : '➤' }}
+    </button>
+  </div>
+</div>
