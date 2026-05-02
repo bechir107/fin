@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, ViewChild } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Service } from '../nut/service';
 import { CommonModule } from '@angular/common';
 
@@ -11,58 +11,81 @@ import { CommonModule } from '@angular/common';
   styleUrl: './rdvp.css',
 })
 export class Rdvp {
+  @ViewChild('rdvForm') rdvForm!: NgForm; // ← AJOUTER
+
   constructor(private service: Service) { }
 
-  nom = ""
-  prenom = ""
-  email = ""
-  date = ""
-  hrdv = ""
-  toutesHeures: string[] = []
-  heuresPrises: string[] = []
-  // ✅ Vérifie si une heure est réservée
+  nom = '';
+  prenom = '';
+  email = '';
+  date = '';
+  hrdv = '';
+  toutesHeures: string[] = [];
+  heuresPrises: string[] = [];
+
   estReservee(h: string): boolean {
     return this.heuresPrises.includes(h);
   }
 
   chargerHeures() {
     if (!this.date) return;
-    console.log('Date choisie:', this.date);
-
     this.service.getHeures(this.date).subscribe((res: any) => {
-      console.log('Réponse complète:', res);
-      console.log('Heures disponibles:', res.disponibles);
-      console.log('Heures prises:', res.prises);
-
       this.toutesHeures = res.disponibles;
       this.heuresPrises = res.prises;
-      this.hrdv = '';
+      this.hrdv = ''; // reset heure quand date change
     });
   }
 
+  isSubmitting = false;
+
   prendreRdv() {
+    // Marquer tous les champs comme touchés pour afficher les erreurs
+    if (this.rdvForm) {
+      Object.values(this.rdvForm.controls).forEach(c => c.markAsTouched());
+    }
+
     if (!this.nom || !this.prenom || !this.email || !this.date || !this.hrdv) {
-      alert('Veuillez remplir tous les champs');
+      this.showNotif('Veuillez remplir tous les champs', 'error');
       return;
     }
+
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
 
     this.service.rondv(this.nom, this.prenom, this.email, this.date, this.hrdv)
       .subscribe({
         next: (res) => {
-          alert((res as any).message);
-          this.nom = "";
-          this.prenom = "";
-          this.email = "";
-          this.date = "";
-          this.hrdv = "";
-          this.heuresPrises = [];
+          this.showNotif((res as any).message, 'success');
+          // ✅ Reset propre via NgForm (remet l'état pristine/untouched)
+          setTimeout(() => {
+            this.rdvForm.resetForm({
+              nom: 'this.nom',
+              prenom: 'this.prenom',
+              email: 'this.eamil',
+              date: '',
+              hrdv: '',
+            });
+            this.toutesHeures = [];
+            this.heuresPrises = [];
+          });
+          this.isSubmitting = false;
         },
         error: (err) => {
           console.error(err);
-          alert('Erreur lors de la réservation');
+          this.showNotif('Erreur lors de la réservation', 'error');
+          this.isSubmitting = false;
         }
       });
   }
 
+  notifVisible = false;
+  notifMessage = '';
+  notifType = 'success';
 
+  showNotif(msg: string, type: 'success' | 'error' | 'warning' = 'success') {
+    this.notifMessage = msg;
+    this.notifType = type;
+    this.notifVisible = true;
+    setTimeout(() => this.notifVisible = false, 3000);
+  }
 }

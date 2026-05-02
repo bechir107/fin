@@ -16,6 +16,7 @@
     </svg>
   </div>
 
+
   <div class="card">
 
     <!-- ── TOP BAR ── -->
@@ -193,4 +194,12 @@
       </form>
     </div>
   </div>
+</div>
+
+<div class="notif-toast" [class.show]="notifVisible" [class.error]="notifType === 'error'"
+  [class.warning]="notifType === 'warning'">
+  <span class="notif-icon">
+    {{ notifType === 'error' ? '❌' : (notifType === 'warning' ? '⚠️' : '✅') }}
+  </span>
+  <span class="notif-text">{{ notifMessage }}</span>
 </div>

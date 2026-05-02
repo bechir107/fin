@@ -64,6 +64,10 @@ throw new Error('Method not implemented.');
 
   // ── Recherche / filtre ────────────────────────────
   filterPatients(): void {
+    if (!this.chercher.trim()) {
+      this.affiche = false;
+      return;
+    }
     this.svc.getPatient(this.chercher).subscribe({
       next: (data: any) => {
         this.patients = data.patients ?? [];
@@ -75,6 +79,10 @@ throw new Error('Method not implemented.');
     });
   }
 
+  get displayedPatients() {
+    return (this.affiche && this.chercher.trim()) ? this.patients : this.fifi;
+  }
+
   suivant(){
     this.activeTab='sante'
   }
@@ -84,46 +92,46 @@ throw new Error('Method not implemented.');
  
   // ── 1. INFOS PERSONNELLES ───────────────────────
   if (!this.nom?.trim()) {
-    alert('⚠️ Le nom est obligatoire.');
+    this.showNotif('Le nom est obligatoire.', 'error');
     this.activeTab = 'info';
     return;
   }
  
   if (!this.prenom?.trim()) {
-    alert('⚠️ Le prénom est obligatoire.');
+    this.showNotif('Le prénom est obligatoire.', 'error');
     this.activeTab = 'info';
     return;
   }
  
   const age = parseFloat(this.age);
   if (!this.age || age < 1 || age > 120) {
-    alert('⚠️ Veuillez saisir un âge valide (1 – 120).');
+    this.showNotif('Veuillez saisir un âge valide (1 – 120).', 'error');
     this.activeTab = 'info';
     return;
   }
  
   if (!this.sexe) {
-    alert('⚠️ Veuillez sélectionner le sexe.');
+    this.showNotif('Veuillez sélectionner le sexe.', 'error');
     this.activeTab = 'info';
     return;
   }
  
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!this.email?.trim() || !emailRegex.test(this.email.trim())) {
-    alert('⚠️ Veuillez saisir un email valide.');
+    this.showNotif('Veuillez saisir un email valide.', 'error');
     this.activeTab = 'info';
     return;
   }
  
   const telRegex = /^[0-9\s\+\-]{8,15}$/;
   if (!this.tel?.trim() || !telRegex.test(this.tel.trim()) || this.tel.trim().length < 8) {
-    alert('⚠️ Veuillez saisir un numéro de téléphone valide.');
+    this.showNotif('Veuillez saisir un numéro de téléphone valide.', 'error');
     this.activeTab = 'info';
     return;
   }
  
   if (!this.adress?.trim()) {
-    alert('⚠️ L\'adresse est obligatoire.');
+    this.showNotif('L\'adresse est obligatoire.', 'error');
     this.activeTab = 'info';
     return;
   }
@@ -131,45 +139,45 @@ throw new Error('Method not implemented.');
   // ── 2. DONNÉES DE SANTÉ ─────────────────────────
   const taille = parseFloat(this.Taille);
   if (!this.Taille || taille < 50 || taille > 250) {
-    alert('⚠️ Veuillez saisir une taille valide (50 – 250 cm).');
+    this.showNotif('Veuillez saisir une taille valide (50 – 250 cm).', 'error');
     this.activeTab = 'sante';
     return;
   }
  
   const poids = parseFloat(this.poids_actuiele);
   if (!this.poids_actuiele || poids < 10 || poids > 300) {
-    alert('⚠️ Veuillez saisir un poids valide (10 – 300 kg).');
+    this.showNotif('Veuillez saisir un poids valide (10 – 300 kg).', 'error');
     this.activeTab = 'sante';
     return;
   }
  
   if (!this.Allergie?.trim()) {
-    alert('⚠️ Veuillez renseigner les allergies (ou "Aucune").');
+    this.showNotif('Veuillez renseigner les allergies (ou "Aucune")', 'error');
     this.activeTab = 'sante';
     return;
   }
  
   if (!this.Conditions_me?.trim()) {
-    alert('⚠️ Veuillez renseigner les conditions médicales (ou "Aucune").');
+    this.showNotif('Veuillez renseigner les conditions médicales (ou "Aucune")', 'error');
     this.activeTab = 'sante';
     return;
   }
  
   // ── 3. ACTIVITÉ & OBJECTIF ──────────────────────
   if (!this.niveau_act) {
-    alert('⚠️ Veuillez sélectionner un niveau d\'activité.');
+    this.showNotif('Veuillez sélectionner un niveau d\'activité.', 'error');
     this.activeTab = 'activite';
     return;
   }
  
   if (!this.objectif) {
-    alert('⚠️ Veuillez sélectionner un objectif nutritionnel.');
+    this.showNotif('Veuillez sélectionner un objectif nutritionnel.', 'error');
     this.activeTab = 'activite';
     return;
   }
  
   if (!this.description?.trim()) {
-    alert('⚠️ Veuillez saisir une description / plan.');
+    this.showNotif('Veuillez saisir une description / plan.', 'error');
     this.activeTab = 'activite';
     return;
   }
@@ -194,7 +202,7 @@ throw new Error('Method not implemented.');
     this.description
   ).subscribe({
     next: () => {
-      alert('✅ Patient ajouté avec succès !');
+      this.showNotif('Patient ajouté avec succès !', 'success');
       form.reset();
       this.resetChamps();
       this.activeTab = 'info';
@@ -203,7 +211,7 @@ throw new Error('Method not implemented.');
     },
     error: (err) => {
       console.error('Erreur ajout patient :', err);
-      alert('❌ Une erreur est survenue. Veuillez réessayer.');
+      this.showNotif('Une erreur est survenue. Veuillez réessayer.', 'error');
     }
   });
 }
@@ -244,12 +252,12 @@ throw new Error('Method not implemented.');
 suppprimer(id: number){
     this.svc.supppatient(id).subscribe({
       next: () => {
-        alert('✅ Patient supprimé avec succès !');
+        this.showNotif('Patient supprimé avec succès !', 'success');
         this.getPatients();
         
       },
       error: (err) => {
-        alert('Erreur suppression patient :');
+        this.showNotif('Erreur suppression patient :', 'error');
       }
     });
   }
@@ -275,6 +283,7 @@ suppprimer(id: number){
  
 fifi: any[] = [];
 
+
 ngOnInit() {
   this.getPatients();
 }
@@ -289,6 +298,7 @@ getPatients() {
     }
   });
 }
+
 selectedIndex: number | null = null;
 
 toggleCard(index: number) {
@@ -298,15 +308,28 @@ toggleCard(index: number) {
     this.selectedIndex = index; // ouvrir
   }
 }
+
 acces(email: string){
   this.svc.accesP(email).subscribe({
     next: (res) => {
-     console.log(res);
+      console.log(res);
+      this.showNotif('Accès accordé avec succès !', 'success');
     },
     error: (err) => {
       console.error(err);
-      alert('Erreur lors de l\'accès');
+      this.showNotif('Erreur lors de l\'accès', 'error');
     }
-  })
+  });
 }
+
+// ── NOTIFICATIONS ─────────────────────────────────
+notifVisible = false;
+notifMessage = '';
+notifType = 'success';
+
+showNotif(msg: string, type: 'success' | 'error' | 'warning' = 'success') {
+  this.notifMessage = msg;
+  this.notifType = type;
+  this.notifVisible = true;
+  setTimeout(() => this.notifVisible = false, 3000);
 }

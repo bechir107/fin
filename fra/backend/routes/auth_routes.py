@@ -22,7 +22,7 @@ def login():
     if not user:
         return jsonify({'message': 'Email ou mot de passe incorrect'}), 401
 
-    return jsonify({'message': 'Connexion réussie', 'nom': user[1], 'prenom': user[2]}), 200
+    return jsonify({'message': 'Connexion réussie','id':user[0], 'nom': user[1], 'prenom': user[2],}), 200
 
 
 @auth_bp.route('/loginNut', methods=['POST'])

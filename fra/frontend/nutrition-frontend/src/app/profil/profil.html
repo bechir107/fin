@@ -1,1 +1,106 @@
-<p>profil works!</p>
+<div class="profil-wrapper">
+
+    <!-- Header Card -->
+    <div class="profil-header">
+        <div class="avatar-ring">
+            <div class="avatar">
+                <span class="avatar-initials">{{ patient?.nom?.charAt(0) }}{{ patient?.prenom?.charAt(0) }}</span>
+            </div>
+        </div>
+        <div class="header-info">
+            <h1 class="patient-name">{{ patient?.nom }} {{ patient?.prenom }}</h1>
+            <span class="patient-badge">Patient actif</span>
+        </div>
+        <button class="btn-update" (click)="recuprer()">
+            <span class="btn-icon">↻</span> Mettre à jour
+        </button>
+    </div>
+
+    <!-- Content -->
+    <div class="profil-grid" *ngIf="patient">
+
+        <!-- Informations personnelles -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">👤</span>
+                <h2>Informations personnelles</h2>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ patient.email }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Téléphone</span>
+                    <span class="info-value">{{ patient.tel }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Adresse</span>
+                    <span class="info-value">{{ patient.adresse }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">mot de passe</span>
+                    <span class="info-value">{{ patient.password }}</span>
+                </div><br>
+
+                <div class="password-section">
+                    <div *ngIf="mot">
+                        <input type="password" class="modern-input" [(ngModel)]="newPassword" placeholder="Nouveau mot de passe">
+                    </div>
+                    <button class="btn-update" [class.btn-confirm]="mot" (click)="motp()">
+                        <span class="btn-icon">🔒</span>
+                        {{ mot ? 'Confirmer' : 'Modifier mot de passe' }}
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Données physiques -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                <h2>Données physiques</h2>
+            </div>
+            <div class="card-body">
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-value">{{ patient.taille }}</span>
+                        <span class="stat-unit">cm</span>
+                        <span class="stat-label">Taille</span>
+                    </div>
+                    <div class="stat-box accent">
+                        <span class="stat-value">{{ patient.poids_actuiele }}</span>
+                        <span class="stat-unit">kg</span>
+                        <span class="stat-label">Poids actuel</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value">
+                            {{ (patient.poids_actuiele / ((patient.taille / 100) * (patient.taille / 100))) |
+                            number:'1.1-1' }}
+                        </span>
+                        <span class="stat-unit">IMC</span>
+                        <span class="stat-label">Indice</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="!patient">
+        <span class="empty-icon">🔍</span>
+        <p>Aucune donnée disponible</p>
+        <button class="btn-update" (click)="recuprer()">Charger le profil</button>
+    </div>
+
+</div>
+
+  <!-- Notification Toast -->
+  <div class="notif-toast" [class.show]="notifVisible" [class.error]="notifType === 'error'" [class.warning]="notifType === 'warning'">
+    <span class="notif-icon">
+      {{ notifType === 'error' ? '❌' : (notifType === 'warning' ? '⚠️' : '✅') }}
+    </span>
+    <span class="notif-text">{{ notifMessage }}</span>
+  </div>

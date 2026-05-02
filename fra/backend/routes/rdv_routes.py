@@ -13,7 +13,7 @@ def prendrerdv():
     date = data.get('date')
     hrdv = data.get('hrdv')
 
-    if not all([nom, prenom, email, date, hrdv]):
+    if not all([nom, prenom, date, hrdv]):
         return jsonify({'message': 'Données manquantes'}), 400
 
     db = get_db()
@@ -55,6 +55,7 @@ def generer_creneaux(heure_debut, heure_fin):
         current += timedelta(hours=1)
     
     return creneaux
+
 @rdv_bp.route('/disponibilite', methods=['GET'])
 def get_disponibilite():
     try:
@@ -70,7 +71,6 @@ def get_disponibilite():
     finally:
         cur.close()
         db.close()
-
 
 @rdv_bp.route('/disponibilite', methods=['POST'])
 def sauvegarder_disponibilite():
@@ -91,6 +91,7 @@ def sauvegarder_disponibilite():
     finally:
         cur.close()
         db.close()
+
 @rdv_bp.route('/heures/<datehdv>', methods=['GET'])
 def get_heures(datehdv):
     try:
@@ -121,6 +122,7 @@ def get_heures(datehdv):
 
     except Exception as e:
         return jsonify({'message': str(e)}), 500
+        
 @rdv_bp.route('/patient', methods=['GET'])
 def patient():
     try:
@@ -129,7 +131,8 @@ def patient():
         cur.execute("SELECT id, nom, prenom, email, hrdv, daterdv, statut FROM rdv")
         rdvs = cur.fetchall()
         result = [{"id": r[0], "nom": r[1], "prenom": r[2],
-                   "email": r[3], "hrdv": r[4], "date_rdv": r[5], "statut": r[6]} for r in rdvs]
+                   "email": r[3], "hrdv": str(r[4])[:5] if r[4] else None, 
+                   "date_rdv": str(r[5]), "statut": r[6]} for r in rdvs]
         return jsonify({"patients": result}), 200
     except Exception as e:
         return jsonify({'message': str(e)}), 500
@@ -145,7 +148,7 @@ def annuler_rdv(id):
         db = get_db()
         cur = db.cursor()
 
-        cur.execute("SELECT * FROM rdv WHERE id=%s", (id,))
+        cur.execute("SELECT nom, prenom, email, hrdv, daterdv FROM rdv WHERE id=%s", (id,))
         rdv = cur.fetchone()
 
         if not rdv:
@@ -153,6 +156,21 @@ def annuler_rdv(id):
 
         cur.execute("DELETE FROM rdv WHERE id=%s", (id,))
         db.commit()
+
+        if rdv[2]: # Si email existe
+            nom, prenom, email, hrdv, daterdv = rdv
+            from flask_mail import Message
+            from routes.email_routes import mail
+            if mail:
+                msg = Message(
+                    subject="Annulation de votre rendez-vous",
+                    recipients=[email]
+                )
+                msg.body = f"Bonjour {nom} {prenom},\n\nNous vous informons que votre rendez-vous du {daterdv} à {hrdv} a été annulé par le cabinet.\n\nCordialement,\nCabinet de Nutrition"
+                try:
+                    mail.send(msg)
+                except Exception as e:
+                    print("Erreur envoi email: ", e)
 
         return jsonify({'message': 'RDV annulé avec succès'}), 200
     except Exception as e:
@@ -166,8 +184,28 @@ def accepter_rdv(id):
     try:
         db = get_db()
         cur = db.cursor()
+        
+        cur.execute("SELECT nom, prenom, email, hrdv, daterdv FROM rdv WHERE id=%s", (id,))
+        rdv = cur.fetchone()
+
         cur.execute("UPDATE rdv SET statut='confirmed' WHERE id=%s", (id,))
         db.commit()
+
+        if rdv and rdv[2]: # Si email existe
+            nom, prenom, email, hrdv, daterdv = rdv
+            from flask_mail import Message
+            from routes.email_routes import mail
+            if mail:
+                msg = Message(
+                    subject="Confirmation de votre rendez-vous",
+                    recipients=[email]
+                )
+                msg.body = f"Bonjour {nom} {prenom},\n\nVotre rendez-vous prévu le {daterdv} à {hrdv} a été confirmé.\n\nCordialement,\nCabinet de Nutrition"
+                try:
+                    mail.send(msg)
+                except Exception as e:
+                    print("Erreur envoi email: ", e)
+
         return jsonify({'message': 'RDV accepté avec succès'}), 200
     except Exception as e:
         return jsonify({'message': str(e)}), 500

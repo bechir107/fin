@@ -290,7 +290,9 @@
         <button type="button" class="btn btn-outline" (click)="showPhoneModal = false">Annuler</button>
 
         <!-- ✅ Corrigé : type="submit" suffit, pas besoin de (click)="rdv()" en plus -->
-        <button type="submit" class="btn btn-primary">Confirmer le RDV</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'En cours...' : 'Confirmer le RDV' }}
+        </button>
       </div>
     </form>
   </div>

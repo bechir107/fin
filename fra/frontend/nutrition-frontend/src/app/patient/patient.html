@@ -57,24 +57,25 @@
       </div>
     </div>
 
-    <!-- Grille patients (résultats de recherche) -->
-    <div class="section-label">Tous les patients</div>
+    <!-- Grille patients unifiée -->
+    <div class="section-label">{{ (affiche && chercher.trim()) ? 'Résultats de recherche' : 'Tous les patients' }}</div>
 
-    <div class="patients-grid" *ngIf="affiche && patients.length">
-      <div class="patient-card" *ngFor="let p of patients">
-        <div class="card-band" [ngClass]="p.sexe === 'Femme' ? 'band-f' : 'band-m'"></div>
-        <div class="card-inner">
+    <div class="patients-grid" *ngIf="displayedPatients.length">
+      <div class="patient-card" *ngFor="let p of displayedPatients; let i = index" [class.expanded]="selectedIndex === i">
+        <div class="card-band" [ngClass]="p.sexe === 'Femme' || p.genre === 'Femme' || p.genre === 'femme' ? 'band-f' : 'band-m'"></div>
+        
+        <div class="card-inner" (click)="toggleCard(i)">
           <div class="card-top">
             <div class="avatar-wrap">
-              <div class="avatar" [ngClass]="p.sexe === 'Femme' ? 'avatar-f' : 'avatar-m'">
-                {{ p.prenom?.[0] }}{{ p.nom?.[0] }}
+              <div class="avatar" [ngClass]="p.sexe === 'Femme' || p.genre === 'Femme' || p.genre === 'femme' ? 'avatar-f' : 'avatar-m'">
+                {{ p.prenom?.[0] | uppercase }}{{ p.nom?.[0] | uppercase }}
               </div>
               <div>
                 <div class="patient-name">{{ p.prenom }} {{ p.nom }}</div>
                 <div class="patient-email">{{ p.email }}</div>
               </div>
             </div>
-            <div class="gender-badge">{{ p.sexe === 'Femme' ? '♀️' : '♂️' }}</div>
+            <div class="gender-badge">{{ p.sexe === 'Femme' || p.genre === 'Femme' || p.genre === 'femme' ? '♀️' : '♂️' }}</div>
           </div>
 
           <div class="card-stats">
@@ -87,96 +88,48 @@
               <div class="cs-key">Poids</div>
             </div>
             <div class="cs-item">
-              <div class="cs-val">{{ calcIMC(p.poids_actuiele, p.Taille) }}</div>
+              <div class="cs-val">{{ calcIMC(p.poids_actuiele, p.taille || p.Taille) }}</div>
               <div class="cs-key">IMC</div>
             </div>
           </div>
 
           <div class="card-tags">
-            <span class="tag tag-obj">🎯 {{ p.objectif }}</span>
-            <span class="tag tag-act">⚡ {{ p.niveau_act }}</span>
+            <span class="tag tag-obj" *ngIf="p.objectif">🎯 {{ p.objectif }}</span>
+            <span class="tag tag-act" *ngIf="p.niveau_act">⚡ {{ p.niveau_act }}</span>
           </div>
         </div>
 
-        <div class="card-footer">
+        <!-- Section Accordéon (Détails cachés) -->
+        <div class="card-accordion" *ngIf="selectedIndex === i">
+          <div class="details-grid">
+            <div *ngIf="p.description"><span>📝 Description</span><p>{{ p.description }}</p></div>
+            <div *ngIf="p.adresse"><span>📍 Adresse</span><p>{{ p.adresse }}</p></div>
+            <div *ngIf="p.allergies || p.Allergie"><span>⚠️ Allergies</span><p>{{ p.allergies || p.Allergie }}</p></div>
+            <div *ngIf="p.condition_med || p.Conditions_me"><span>🏥 Conditions</span><p>{{ p.condition_med || p.Conditions_me }}</p></div>
+            <div *ngIf="p.taille || p.Taille"><span>📏 Taille</span><p>{{ p.taille || p.Taille }} cm</p></div>
+          </div>
+          
+          <div class="card-actions-row">
+            <button class="but-delete" (click)="suppprimer(p.id); $event.stopPropagation()">🗑️ Supprimer</button>
+            <button class="but-access" (click)="acces(p.email); $event.stopPropagation()">🔑 Donner l'accès</button>
+          </div>
+        </div>
+
+        <div class="card-footer" (click)="toggleCard(i)">
           <div class="card-contact">📞 {{ p.tel }}</div>
           <div class="card-actions">
-            <div class="icon-btn" title="Voir profil">👁</div>
-            <div class="icon-btn" title="Modifier">✏️</div>
-            <div class="icon-btn" title="Plan nutritionnel">🥗</div>
+            <div class="expand-btn">
+              {{ selectedIndex === i ? 'Fermer ▴' : 'Voir plus ▾' }}
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- État vide -->
-    <div class="empty-state" *ngIf="affiche && !patients.length">
+    <div class="empty-state" *ngIf="!displayedPatients.length">
       Aucun patient trouvé 🌿
     </div>
-
-    <!-- Liste dépliable (fifi) -->
-    <div class="patients-container">
-      <div class="cards-container">
-
-        <div class="card"
-             *ngFor="let p of fifi; let i = index"
-             (click)="toggleCard(i)"
-             [class.active]="selectedIndex === i">
-
-          <!-- Header -->
-          <div class="card-header">
-            <div class="avatar">
-              {{ p.prenom?.[0] }}{{ p.nom?.[0] }}
-            </div>
-            <div class="info">
-              <h3>{{ p.prenom }} {{ p.nom }}</h3>
-              <span class="badge">{{ p.genre }}</span>
-            </div>
-          </div>
-
-          <!-- Infos principales -->
-          <div class="card-body">
-            <div class="info-row">
-              <span>🪪 ID</span>
-              <strong>{{ p.id }}</strong>
-            </div>
-            <div class="info-row">
-              <span>🎂 Âge</span>
-              <strong>{{ p.age }}</strong>
-            </div>
-            <div class="info-row">
-              <span>🎯 Objectif</span>
-              <strong>{{ p.objectif }}</strong>
-            </div>
-            <div class="info-row">
-              <span>📏 Taille</span>
-              <strong>{{ p.taille }} cm</strong>
-            </div>
-            <div class="info-row">
-              <span>⚖️ Poids</span>
-              <strong>{{ p.poids_actuiele }} kg</strong>
-            </div>
-          </div>
-
-          <!-- Détails (accordéon) -->
-          <div class="details" *ngIf="selectedIndex === i">
-            <div class="details-grid">
-              <div><span>📝 Description</span><p>{{ p.description }}</p></div>
-              <div><span>📧 Email</span><p>{{ p.email }}</p></div>
-              <div><span>📞 Tél</span><p>{{ p.tel }}</p></div>
-              <div><span>📍 Adresse</span><p>{{ p.adresse }}</p></div>
-              <div><span>⚠️ Allergies</span><p>{{ p.allergies }}</p></div>
-              <div><span>🏥 Conditions</span><p>{{ p.condition_med }}</p></div>
-              <div><span>🏃 Activité</span><p>{{ p.niveau_act }}</p></div>
-            </div>
-                 <div class="card-actions">
-                    <button class="but" (click)="suppprimer(p.id)">Supprimer</button>
-                    <button class="acc" (click)="acces(p.email)">Donner l'accès</button>
-            </div></div>
-
-      </div>
-    </div>
-  </div>
   </main>
 
   <!-- Feuille décorative -->
@@ -332,3 +285,11 @@
 
   </div><!-- /.modal-box -->
 </div><!-- /.modal-overlay -->
+
+  <!-- Notification Toast -->
+  <div class="notif-toast" [class.show]="notifVisible" [class.error]="notifType === 'error'" [class.warning]="notifType === 'warning'">
+    <span class="notif-icon">
+      {{ notifType === 'error' ? '❌' : (notifType === 'warning' ? '⚠️' : '✅') }}
+    </span>
+    <span class="notif-text">{{ notifMessage }}</span>
+  </div>

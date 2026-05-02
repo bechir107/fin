@@ -87,7 +87,7 @@ export class Rdv implements OnInit {
   pendingCount = 0;
 
   showPhoneModal = false;
-  showSuccessCard = false; // ✅ Nouvel état pour la carte de succès
+  isSubmitting = false; // Add isSubmitting state
   showDetailsModal = false;
   selectedAppointment: any = null;
 
@@ -118,6 +118,8 @@ export class Rdv implements OnInit {
   // ─────────────────────────────────────────
 
   rdv() {
+    if (this.isSubmitting) return;
+
     if (!this.nom || !this.prenom || !this.date) {
       this.showNotif('Veuillez remplir vos informations', 'error');
       return;
@@ -126,18 +128,29 @@ export class Rdv implements OnInit {
       this.showNotif('Veuillez sélectionner une heure', 'error');
       return;
     }
+    
+    this.isSubmitting = true;
     this.service.rondv(this.nom, this.prenom, this.email, this.date, this.heure).subscribe({
-      next: (response) => {
-        this.showPhoneModal = false;
-        this.nom = ''; this.prenom = ''; this.email = '';
-        this.date = ''; this.heure = '';
-        this.afficher();
-        this.showSuccessCard = true;
-        setTimeout(() => this.showSuccessCard = false, 4000);
+      next: (response: any) => {
+        try {
+          this.isSubmitting = false;
+          this.showPhoneModal = false;
+          this.nom = ''; this.prenom = ''; this.email = '';
+          this.date = ''; this.heure = '';
+          this.afficher();
+          this.showNotif(response.message || 'Rendez-vous ajouté avec succès', 'success');
+        } catch(e) {
+          console.error(e);
+        } finally {
+          this.cdr.detectChanges();
+        }
       },
       error: (error) => {
-        this.showNotif('Erreur lors de l\'ajout', 'error');
-        console.log(error);
+        this.isSubmitting = false;
+        const msg = error?.error?.message || error?.message || 'Erreur inconnue';
+        this.showNotif('Erreur: ' + msg, 'error');
+        console.error("Backend error:", error);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -445,7 +458,10 @@ export class Rdv implements OnInit {
       return;
     }
     const allSlots = this.getAvailableSlots(this.date);
-    this.phoneAvailableSlots = allSlots.filter(s => !this.isBooked(this.date, s));
+    // Filtrer les créneaux qui ont déjà un RDV (confirmé ou en attente)
+    this.phoneAvailableSlots = allSlots.filter(s => {
+      return !this.appointments.some(a => a.date === this.date && a.time === s && a.status !== 'cancelled');
+    });
   }
 
   // ─────────────────────────────────────────
