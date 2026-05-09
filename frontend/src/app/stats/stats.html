@@ -1,0 +1,68 @@
+<div class="stats-container">
+  <div class="stats-header">
+    <h1 class="stats-title">Vue d'ensemble et Statistiques</h1>
+    <p class="stats-subtitle">Analysez votre activité avec précision.</p>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-info">
+        <p class="kpi-val">{{ totalPatients }}</p>
+        <p class="kpi-label">Patients Totaux</p>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📅</div>
+      <div class="kpi-info">
+        <p class="kpi-val">{{ monthlyRdv }}</p>
+        <p class="kpi-label">RDV Ce Mois</p>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-info">
+        <p class="kpi-val">{{ confirmRate }}</p>
+        <p class="kpi-label">Taux de Confirmation</p>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">❌</div>
+      <div class="kpi-info">
+        <p class="kpi-val">{{ cancelRate }}</p>
+        <p class="kpi-label">Taux d'Annulation</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-panel col-span-2">
+      <div class="panel-head">
+        <h3 class="panel-title">Activité Hebdomadaire</h3>
+      </div>
+      <div class="chart-wrapper">
+        <canvas #activityChart></canvas>
+      </div>
+    </div>
+
+    <div class="chart-panel">
+      <div class="panel-head">
+        <h3 class="panel-title">Types de Consultation</h3>
+      </div>
+      <div class="chart-wrapper">
+        <canvas #typesChart></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-panel col-span-3">
+      <div class="panel-head">
+        <h3 class="panel-title">Répartition par Âge</h3>
+      </div>
+      <div class="chart-wrapper">
+        <canvas #ageChart></canvas>
+      </div>
+    </div>
+  </div>
+</div>

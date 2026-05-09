@@ -1,33 +1,58 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+/* NUTRIUM Theme Variables (Global) */
 :root {
-  /* Nature & Energie Theme Colors */
-  --bg-light:       #F5F5F5; /* Background: Gris clair */
-  --bg-card:        #FFFFFF; /* Pure white cards */
-  --border-subtle:  #E0E0E0; /* Soft border */
+  /* Core Colors */
+  --green-deep: #1a2e1c;
+  --green-dark: #2d5a35;
+  --green-mid: #4caf6a;
+  --green-light: #a8dbb4;
+  --green-pale: #dceedd;
+  --green-surface: #f3f8f2;
+  --green-border: #d0e8d2;
+  --green-border2: #b7d9b0;
 
-  /* Primary & Accent */
-  --green-deep:     #2E7D32; /* Primary: Vert foncé */
-  --green-mid:      #4CAF50; /* Accent: Vert */
-  --green-fresh:    #4CAF50; /* Accent */
-  --green-light:    #E8F5E9; /* Soft Green Background */
-  
-  --gold:           #FF9800; /* Secondary: Orange */
-  --gold-light:     #FFF3E0;
-  
-  /* Text */
-  --text-dark:      #333333; /* Text: Gris foncé */
-  --text-mid:       #666666; /* Secondary Text */
-  --text-muted:     #999999; /* Muted Text */
-  --white:          #FFFFFF;
-  
+  --text-on-dark-primary: #d4eeda;
+  --text-on-dark-secondary: #a8cdb0;
+  --text-on-dark-muted: #6a9a72;
+
+  --text-primary: #1a2e1c;
+  --text-secondary: #5a8a62;
+  --text-muted: #7aaa82;
+
   /* Typography */
-  --font-display: 'Outfit', sans-serif;
-  --font-body:    'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+
+  /* Compatibility Aliases for inner pages (RDV, Stats, Patient, Acceuil) */
+  --bg-light: var(--green-surface);
+  --bg-card: #FFFFFF;
+  --border-subtle: var(--green-border);
+
+  --green-fresh: var(--green-mid);
+  
+  --gold: #FF9800;
+  --gold-light: #FFF3E0;
+
+  --text-dark: var(--text-primary);
+  --text-mid: var(--text-secondary);
+  --white: #FFFFFF;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   font-family: var(--font-body);
@@ -55,13 +80,27 @@ body {
 }
 
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .reveal {

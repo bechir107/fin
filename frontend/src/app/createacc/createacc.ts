@@ -1,171 +1,135 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { AuthService } from '../auth/auth.service';
+import { Router, RouterLink } from '@angular/router';
+import { Service } from '../nut/service';
 
 @Component({
   selector: 'app-createacc',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, HttpClientModule],
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule, RouterLink],
   templateUrl: './createacc.html',
   styleUrls: ['./createacc.css']
 })
-export class Createacc {
+export class Createacc implements OnInit {
+  step = 1;
+  totalSteps = 2;
+  successMessage = '';
+  errorMessage = '';
+  isLoading = false;
+  isEditing = false;
 
-  private api = 'http://127.0.0.1:5000';
+  form: FormGroup;
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-    private cdr: ChangeDetectorRef,
-    private authService: AuthService
-  ) {}
+  constructor(private fb: FormBuilder, private http: HttpClient, private router: Router, private service: Service) {
+    this.form = this.fb.group({
+      // Step 1 — User
+      nom: ['', [Validators.required, Validators.minLength(2)]],
+      prenom: ['', [Validators.required, Validators.minLength(2)]],
+      ddn: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      telephone: ['', [Validators.required, Validators.pattern(/^[0-9+\s\-]{8,15}$/)]],
 
-  user = {
-    prenom: '',
-    nom: '',
-    email: '',
-    telephone: '',
-    ddn: '',           // date de naissance → champ `ddn` dans `user`
-    password: '',
-    confirmPassword: '',
-    acceptTerms: false,
-    // Champs spécifiques patient
-    sexe: '',
-    adresse: '',
-    taille: null as number | null,
-    allergie: '',
-    maladie_chronique: '',
-    objectif: '',
-    ddc: ''            // date début consultation
-  };
-
-  showPassword = false;
-  loading      = false;
-  errorMsg     = '';
-  successMsg   = '';
-  ageError     = false;
-  termsError   = false;
-  maxDate      = new Date().toISOString().split('T')[0];
-
-  onlyLetters(event: KeyboardEvent): void {
-    const allowed = /^[a-zA-ZÀ-ÿ\s\-]$/;
-    if (!allowed.test(event.key)) event.preventDefault();
-  }
-
-  emailExists   = false;
-  checkingEmail = false;
-
-  checkEmail(): void {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!this.user.email || !emailRegex.test(this.user.email)) return;
-
-    this.checkingEmail = true;
-    this.emailExists   = false;
-    this.cdr.detectChanges();
-
-    this.http.get(`${this.api}/checkEmail/${this.user.email}`).subscribe({
-      next: (res: any) => {
-        this.checkingEmail = false;
-        this.emailExists   = res.exists;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.checkingEmail = false;
-        this.cdr.detectChanges();
-      }
+      // Step 2 — Patient
+      sexe: ['', Validators.required],
+      adresse: ['', Validators.required],
+      taille: ['', [Validators.required, Validators.min(50), Validators.max(250)]],
+      allergie: [''],
+      maladie_chronique: [''],
+      objectif: ['', Validators.required],
     });
   }
 
-  onSubmit(): void {
-    this.errorMsg  = '';
-    this.ageError  = false;
-    this.termsError = false;
+  ngOnInit() {
+    this.loadUserProfile();
+  }
 
-    if (this.emailExists) {
-      this.errorMsg = 'Cette adresse e-mail est déjà utilisée.';
-      return;
-    }
+  loadUserProfile() {
+    // Vérifier si l'utilisateur est connecté (dans localStorage)
+    const userDataStr = localStorage.getItem('user_data') || localStorage.getItem('google_user');
+    if (!userDataStr) return; // Pas d'utilisateur connecté
 
-    const lettersOnly = /^[a-zA-ZÀ-ÿ\s\-]+$/;
+    try {
+      const userData = JSON.parse(userDataStr);
+      const email = userData.email;
 
-    if (!this.user.prenom || this.user.prenom.trim().length < 2) {
-      this.errorMsg = 'Le prénom est requis (min. 2 caractères).'; return;
+      if (email) {
+        this.isEditing = true;
+        // Charger les données depuis le serveur
+        this.service.getUserProfile(email).subscribe({
+          next: (profile: any) => {
+            this.form.patchValue({
+              nom: profile.nom || '',
+              prenom: profile.prenom || '',
+              ddn: profile.ddn || '',
+              email: profile.email || '',
+              telephone: profile.telephone || '',
+              sexe: profile.sexe || '',
+              adresse: profile.adresse || '',
+              taille: profile.taille || '',
+              allergie: profile.allergie || '',
+              maladie_chronique: profile.maladie_chronique || '',
+              objectif: profile.objectif || '',
+            });
+            // Si mode édition, ne pas exiger le mot de passe
+            this.form.get('password')?.clearAsyncValidators();
+          },
+          error: (err) => {
+            console.error('Erreur chargement profil:', err);
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Erreur parsing userData:', e);
     }
-    if (!lettersOnly.test(this.user.prenom)) {
-      this.errorMsg = 'Le prénom ne doit contenir que des lettres.'; return;
-    }
-    if (!this.user.nom || this.user.nom.trim().length < 2) {
-      this.errorMsg = 'Le nom est requis (min. 2 caractères).'; return;
-    }
-    if (!lettersOnly.test(this.user.nom)) {
-      this.errorMsg = 'Le nom ne doit contenir que des lettres.'; return;
-    }
+  }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!this.user.email || !emailRegex.test(this.user.email)) {
-      this.errorMsg = 'Adresse e-mail invalide.'; return;
-    }
+  get f() { return this.form.controls; }
 
-    const telRegex = /^[0-9+\s]{8,15}$/;
-    if (!this.user.telephone || !telRegex.test(this.user.telephone)) {
-      this.errorMsg = 'Numéro de téléphone invalide (8-15 chiffres).'; return;
-    }
+  nextStep() {
+    const step1Fields = this.isEditing
+      ? ['nom', 'prenom', 'ddn', 'email', 'telephone']
+      : ['nom', 'prenom', 'ddn', 'email', 'password', 'telephone'];
+    step1Fields.forEach(field => this.form.get(field)?.markAsTouched());
+    const step1Valid = step1Fields.every(field => this.form.get(field)?.valid);
+    if (step1Valid) this.step = 2;
+  }
 
-    if (!this.user.ddn) {
-      this.errorMsg = 'La date de naissance est requise.'; return;
-    }
-    const birth = new Date(this.user.ddn);
-    const age   = new Date().getFullYear() - birth.getFullYear();
-    if (age < 5) { this.ageError = true; return; }
+  prevStep() {
+    this.step = 1;
+  }
 
-    if (!this.user.password || this.user.password.length < 6) {
-      this.errorMsg = 'Le mot de passe doit contenir au moins 6 caractères.'; return;
-    }
-    if (this.user.password !== this.user.confirmPassword) {
-      this.errorMsg = 'Les mots de passe ne correspondent pas.'; return;
-    }
-    if (!this.user.acceptTerms) { this.termsError = true; return; }
+  onSubmit() {
+    this.form.markAllAsTouched();
+    if (this.form.invalid) return;
 
-    this.loading = true;
-    this.cdr.detectChanges();
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
 
-    // Payload aligné sur /createPatient du nouveau app.py
-    const payload = {
-      nom:               this.user.nom.trim(),
-      prenom:            this.user.prenom.trim(),
-      ddn:               this.user.ddn,          // date de naissance → table user
-      email:             this.user.email.trim(),
-      password:          this.user.password,
-      telephone:         this.user.telephone.trim(),
-      sexe:              this.user.sexe,
-      adresse:           this.user.adresse,
-      taille:            this.user.taille,
-      allergie:          this.user.allergie,
-      maladie_chronique: this.user.maladie_chronique,
-      objectif:          this.user.objectif,
-      ddc:               this.user.ddc           // date début consultation → table patient
-    };
+    const endpoint = this.isEditing 
+      ? 'http://localhost:5000/updateProfile' 
+      : 'http://localhost:5000/api/register';
 
-    this.http.post(`${this.api}/createUser`, payload).subscribe({
-      next: () => {
-        this.loading    = false;
-        this.successMsg = 'Votre compte a été créé avec succès. Bienvenue !';
-        this.cdr.detectChanges();
-        setTimeout(() => this.router.navigate(['/escpacep/rdvp']), 2000);
+    this.http.post(endpoint, this.form.value).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+        this.successMessage = this.isEditing 
+          ? 'Profil mis à jour avec succès !'
+          : 'Compte créé avec succès !';
+        setTimeout(() => {
+          if (this.isEditing) {
+            this.router.navigate(['/dashboard/rdv']);
+          } else {
+            this.router.navigate(['/login']);
+          }
+        }, 2000);
       },
-      error: (err: any) => {
-        this.loading = false;
-        if (err.status === 409) {
-          this.errorMsg = 'Cette adresse e-mail est déjà utilisée.';
-        } else if (err.status === 400) {
-          this.errorMsg = 'Champs obligatoires manquants. Vérifiez le formulaire.';
-        } else {
-          this.errorMsg = err.error?.message ?? 'Une erreur est survenue. Réessayez.';
-        }
-        this.cdr.detectChanges();
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = err.error?.message || 'Une erreur est survenue. Veuillez réessayer.';
       }
     });
   }

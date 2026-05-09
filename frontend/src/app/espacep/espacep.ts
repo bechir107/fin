@@ -1,23 +1,25 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Service } from '../nut/service';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-espacep',
-  imports: [RouterOutlet,RouterLink],
+  standalone: true,
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   templateUrl: './espacep.html',
   styleUrl: './espacep.css',
 })
-export class Espacep {
-   nom="";
-   prenom="";
+export class Espacep implements OnInit {
+  nom = '';
+  prenom = '';
 
+  constructor(private service: Service, private router: Router) { }
 
-  constructor(private service: Service, private router: Router) {}
   ngOnInit() {
     const user = this.service.cuurrentUser;
     if (user) {
-      this.nom    = user.nom;
+      this.nom = user.nom;
       this.prenom = user.prenom;
     }
     console.log('Utilisateur connecté :', this.nom, this.prenom);
@@ -32,5 +34,3 @@ export class Espacep {
     this.router.navigate(['/login']);
   }
 }
-
-

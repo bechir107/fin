@@ -29,15 +29,32 @@ export class Service {
   } 
 
   rondv(nom:string,prenom:string,email:string,date:string,hrdv:string){
-   return this.http.post('http://127.0.0.1:5000/prendrerdv',{nom,prenom,email,date,hrdv})
-  
+   return this.http.post('http://127.0.0.1:5000/prendrerdv',{nom,prenom,email,date,hrdv});
+  }
+
+  supprdv(id: number) {
+    return this.http.get(`http://127.0.0.1:5000/supprdv/${id}`);
+  }
+
+  accepterRdv(id: number) {
+    return this.http.put(`http://127.0.0.1:5000/accepter_rdv/${id}`, {});
+  }
+
+  getDisponibilite() {
+    return this.http.get<any[]>('http://127.0.0.1:5000/disponibilite');
+  }
+
+  saveDisponibilite(slots: any[]) {
+    return this.http.post('http://127.0.0.1:5000/disponibilite', slots);
+  }
+
+  accesP(email: string) {
+    return this.http.get(`http://127.0.0.1:5000/accesP/${email}`);
 }
-accesP(email: string) {
-  return this.http.get(`http://127.0.0.1:5000/accesP/${email}`);
-}
 
-
-
+  getUserProfile(email: string) {
+    return this.http.get<any>(`http://127.0.0.1:5000/me/${email}`);
+  }
 getHeures(datehdv: string){
   return this.http.get<string[]>(`http://127.0.0.1:5000/heures/${datehdv}`);
 }

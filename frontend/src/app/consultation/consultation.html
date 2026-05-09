@@ -1,1 +1,272 @@
-<p>consultation works!</p>
+<div class="page-wrapper">
+
+    <!-- ── Header ── -->
+    <div class="page-header">
+        <div class="page-title-block">
+            <div class="page-icon"><i class="ti ti-stethoscope"></i></div>
+            <div>
+                <h1 class="page-title">Consultations</h1>
+                <p class="page-subtitle">Suivi des bilans et séances nutritionnelles</p>
+            </div>
+        </div>
+        <button class="btn-primary" (click)="openCreate()">
+            <i class="ti ti-plus"></i> Nouvelle consultation
+        </button>
+    </div>
+
+    <!-- ── Stats ── -->
+    <div class="stats-grid" *ngIf="stats">
+        <div class="stat-card">
+            <div class="stat-icon teal"><i class="ti ti-clipboard-list"></i></div>
+            <div>
+                <div class="stat-label">Total consultations</div>
+                <div class="stat-value">{{ stats.total }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="ti ti-weight"></i></div>
+            <div>
+                <div class="stat-label">Poids moyen</div>
+                <div class="stat-value">{{ stats.poids_moyen }} kg</div>
+            </div>
+        </div>
+        <div class="stat-card" *ngFor="let d of stats.par_diagnostic | slice:0:2">
+            <div class="stat-icon amber"><i class="ti ti-chart-donut"></i></div>
+            <div>
+                <div class="stat-label">{{ d.label | titlecase }}</div>
+                <div class="stat-value">{{ d.count }} patient{{ d.count > 1 ? 's' : '' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Filters ── -->
+    <div class="filters-bar">
+        <div class="search-box">
+            <i class="ti ti-search"></i>
+            <input type="text" placeholder="Rechercher diagnostic, remarque..."
+                (input)="onSearch($any($event.target).value)" />
+        </div>
+        <select class="filter-select" (change)="onFilterDiag($any($event.target).value)">
+            <option value="">Tous les diagnostics</option>
+            <option *ngFor="let d of diagnostics" [value]="d">{{ d | titlecase }}</option>
+        </select>
+        <span class="result-count">{{ total }} résultat{{ total !== 1 ? 's' : '' }}</span>
+    </div>
+
+    <!-- ── Table ── -->
+    <div class="table-card">
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Patient</th>
+                        <th>RDV</th>
+                        <th>Date</th>
+                        <th>Poids</th>
+                        <th>Tension</th>
+                        <th>Glycémie</th>
+                        <th>Diagnostic</th>
+                        <th>Remarque</th>
+                        <th class="col-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngIf="loading">
+                        <td colspan="10" class="loading-row">
+                            <span class="spinner"></span> Chargement...
+                        </td>
+                    </tr>
+                    <tr *ngIf="!loading && consultations.length === 0">
+                        <td colspan="10" class="empty-row">
+                            <i class="ti ti-mood-empty"></i>
+                            <span>Aucune consultation trouvée</span>
+                        </td>
+                    </tr>
+                    <tr *ngFor="let c of consultations; trackBy: trackById">
+                        <td class="td-id">{{ c.id_consultation }}</td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--primary-dark);">{{ c.nom }} {{ c.prenom }}</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">ID: {{ c.id_patient }}</div>
+                        </td>
+                        <td>
+                            <span class="rdv-badge">RDV #{{ c.id_rendez_vous }}</span>
+                        </td>
+                        <td>
+                            <div class="date-cell">
+                                <i class="ti ti-calendar"></i>
+                                {{ c.date_consultation | date:'dd MMM yyyy' : '' : 'fr' }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="poids-cell">
+                                <span class="poids-val">{{ c.poids | number:'1.1-1' }} kg</span>
+                                <span class="badge" [ngClass]="imcClass(c.poids)">{{ imcLabel(c.poids) }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="vitals">
+                                <i class="ti ti-heart-rate-monitor"></i>
+                                {{ c.tension_arterielle || '—' }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="vitals">
+                                <i class="ti ti-droplet"></i>
+                                {{ c.glycemie || '—' }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge" [ngClass]="diagClass(c.diagnostic)">
+                                {{ c.diagnostic || '—' }}
+                            </span>
+                        </td>
+                        <td class="remarque-cell" [title]="c.remarque">{{ c.remarque || '—' }}</td>
+                        <td>
+                            <div class="actions">
+                                <button class="icon-btn edit" (click)="openEdit(c)" title="Modifier">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                                <button class="icon-btn del" (click)="confirmDelete(c)" title="Supprimer">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalPages > 1">
+            <span class="pag-info">Page {{ page }} / {{ totalPages }}</span>
+            <div class="pag-btns">
+                <button class="pag-btn" [disabled]="page === 1" (click)="goPage(page - 1)">
+                    <i class="ti ti-chevron-left"></i>
+                </button>
+                <button *ngFor="let p of pages" class="pag-btn" [class.active]="p === page" (click)="goPage(p)">{{ p
+                    }}</button>
+                <button class="pag-btn" [disabled]="page === totalPages" (click)="goPage(page + 1)">
+                    <i class="ti ti-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL — Ajouter / Modifier
+════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()" role="dialog"
+        [attr.aria-label]="isEditing ? 'Modifier la consultation' : 'Nouvelle consultation'">
+
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="ti" [ngClass]="isEditing ? 'ti-edit' : 'ti-plus'"></i>
+                {{ isEditing ? 'Modifier la consultation' : 'Nouvelle consultation' }}
+            </div>
+            <button class="modal-close" (click)="closeModal()" aria-label="Fermer">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="save()" class="modal-body">
+
+            <div class="form-section-label">Informations de base</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>N° Rendez-vous <span class="req">*</span></label>
+                    <input type="number" formControlName="id_rendez_vous" placeholder="ex: 1"
+                        [class.invalid]="field('id_rendez_vous')?.invalid && field('id_rendez_vous')?.touched" />
+                    <div class="error-msg" *ngIf="field('id_rendez_vous')?.invalid && field('id_rendez_vous')?.touched">
+                        Champ requis, valeur ≥ 1
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Date <span class="req">*</span></label>
+                    <input type="date" formControlName="date_consultation"
+                        [class.invalid]="field('date_consultation')?.invalid && field('date_consultation')?.touched" />
+                    <div class="error-msg"
+                        *ngIf="field('date_consultation')?.invalid && field('date_consultation')?.touched">
+                        Date requise
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section-label">Données biométriques</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Poids (kg) <span class="req">*</span></label>
+                    <input type="number" step="0.1" formControlName="poids" placeholder="ex: 72.5"
+                        [class.invalid]="field('poids')?.invalid && field('poids')?.touched" />
+                    <div class="error-msg" *ngIf="field('poids')?.invalid && field('poids')?.touched">
+                        Entre 20 et 300 kg
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tension artérielle</label>
+                    <input type="text" formControlName="tension_arterielle" placeholder="ex: 12/8" />
+                </div>
+                <div class="form-group">
+                    <label>Glycémie</label>
+                    <input type="text" formControlName="glycemie" placeholder="ex: 1.1 g/L" />
+                </div>
+                <div class="form-group">
+                    <label>Diagnostic</label>
+                    <select formControlName="diagnostic">
+                        <option value="">Sélectionner...</option>
+                        <option *ngFor="let d of diagnostics" [value]="d">{{ d | titlecase }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-section-label">Notes cliniques</div>
+            <div class="form-group full">
+                <label>Remarque</label>
+                <textarea formControlName="remarque" rows="3"
+                    placeholder="Observations, recommandations alimentaires..."></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" (click)="closeModal()">Annuler</button>
+                <button type="submit" class="btn-primary" [disabled]="saving">
+                    <i class="ti" [ngClass]="saving ? 'ti-loader-2' : 'ti-check'"></i>
+                    {{ saving ? 'Enregistrement...' : (isEditing ? 'Modifier' : 'Ajouter') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL — Confirmer suppression
+════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="cancelDelete()">
+    <div class="modal modal-sm" (click)="$event.stopPropagation()" role="dialog">
+        <div class="modal-header danger-header">
+            <div class="modal-title"><i class="ti ti-alert-triangle"></i> Confirmer la suppression</div>
+            <button class="modal-close" (click)="cancelDelete()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <p class="delete-msg">
+                Voulez-vous vraiment supprimer la consultation <strong>#{{ deleteTarget?.id_consultation }}</strong>
+                du <strong>{{ deleteTarget?.date_consultation }}</strong> ?
+                Cette action est irréversible.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
+            <button class="btn-danger" (click)="doDelete()">
+                <i class="ti ti-trash"></i> Supprimer
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="toast" *ngIf="toast" [ngClass]="'toast-' + toast.type">
+    <i class="ti" [ngClass]="toast.type === 'success' ? 'ti-circle-check' : 'ti-circle-x'"></i>
+    {{ toast.msg }}
+</div>

@@ -13,6 +13,8 @@ import { CallbackComponent } from './callback/callback.component'
 import { ForgotPassword } from './forgot-password/forgot-password';
 import { ChatFab } from './chat-fab/chat-fab';
 import { Calculateur } from './calculateur/calculateur';
+import { Stats } from './stats/stats';
+import { Consultation } from './consultation/consultation';
 export const routes: Routes = [
   {path: 'forgot-password', component: ForgotPassword},
    { path: 'callback', component: CallbackComponent },
@@ -24,7 +26,9 @@ export const routes: Routes = [
   {path: 'dashboard',component: Dashboard, 
     children:[
          {path:'patient', component:PatientC},
-         {path:'rdv',component:Rdv}
+         {path:'rdv',component:Rdv},
+         {path:'stats', component:Stats},
+         {path:'consultation', component:Consultation}
              ]
 },
 {path:'escpacep', component:Espacep,

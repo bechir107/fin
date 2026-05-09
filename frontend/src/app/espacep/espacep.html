@@ -1,56 +1,68 @@
 <div class="layout">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
   <aside class="sidebar">
 
+    <!-- Logo -->
     <div class="sidebar-logo">
-      <div class="logo-icon">P</div>
-      <span class="logo-text">{{nom}} {{prenom}}</span>
+      <div class="logo-icon">🌿</div>
+      <div class="logo-text">
+        Cabinet Mrad
+        <small>Nutrition &amp; Bien-être</small>
+      </div>
     </div>
 
-    <nav class="sidebar-nav">
-      <p class="nav-section-label">MENU</p>
+    <!-- Patient identity card -->
+    <div class="patient-mini-card">
+      <div class="patient-avatar">{{ (nom || 'P')[0].toUpperCase() }}</div>
+      <div class="patient-info">
+        <div class="patient-name">{{ nom }} {{ prenom }}</div>
+        <div class="patient-badge">🌱 Patient actif</div>
+      </div>
+    </div>
 
-    
-      <a  class="nav-item" routerLink="/escpacep/rdvp" routerLinkActive="active">
-        <span class="nav-icon">
-          📅
-        </span>
-        <span class="nav-label">prendre rdv</span>
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <p class="nav-section-label">Navigation</p>
+
+      <a class="nav-item" routerLink="/escpacep/rdvp" routerLinkActive="active">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Prendre rendez-vous</span>
       </a>
-         
+
       <a class="nav-item" routerLink="/patient/profil" routerLinkActive="active">
-        <span class="nav-icon">
-          👤
-        </span>
+        <span class="nav-icon">👤</span>
         <span class="nav-label">Mon profil</span>
       </a>
 
       <a class="nav-item" routerLink="/patient/contact" routerLinkActive="active">
-        <span class="nav-icon">
-          ✉️
-        </span>
+        <span class="nav-icon">✉️</span>
         <span class="nav-label">Contact nutritionniste</span>
       </a>
 
     </nav>
 
-
+    <!-- Footer -->
     <div class="sidebar-footer">
 
-      <div class="user-card">
-        <div class="user-avatar">P</div>
-        <div class="user-info">
-          <p class="user-name">{{nom}} {{prenom}}</p>
-          <p class="user-role">Espace personnel</p>
+      <!-- Wellness tip chip -->
+      <div class="sidebar-tip">
+        <span class="tip-icon">💡</span>
+        <div class="tip-text">
+          <strong>Conseil du jour</strong>
+          Buvez 1,5 à 2 L d'eau pour optimiser votre métabolisme.
         </div>
       </div>
 
-      <a class="logout-btn" (click)="logout()" style="cursor: pointer;">
+      <button class="logout-btn" (click)="logout()">
         🚪 Déconnexion
-      </a>
+      </button>
 
     </div>
 
   </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
   <main class="main-content">
     <router-outlet></router-outlet>
   </main>

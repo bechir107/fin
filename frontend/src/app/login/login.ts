@@ -112,7 +112,7 @@ export class Login {
 
         // Redirection selon le rôle retourné par le backend
         if (res.role === 'nutritionniste') {
-          this.successMsg = 'Redirection vers le tableau de bord...';
+          this.successMsg = 'Redirection vers votre tableau de bord...';
           this.cdr.detectChanges();
           setTimeout(() => this.router.navigate(['dashboard/rdv']), 1500);
         } else {
