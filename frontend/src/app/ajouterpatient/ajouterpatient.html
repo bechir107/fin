@@ -1,0 +1,177 @@
+<div class="ap-page">
+  <!-- Décor de fond -->
+  <div class="ap-bg-decor">
+    <div class="circle c1"></div>
+    <div class="circle c2"></div>
+    <div class="circle c3"></div>
+  </div>
+
+  <div class="ap-container">
+    <!-- En-tête -->
+    <div class="ap-header glass-card">
+      <button class="btn-back" (click)="retour()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Retour
+      </button>
+      <div class="header-text">
+        <h1 class="ap-title">Nouveau Patient</h1>
+        <p class="ap-sub">Enregistrez rapidement un patient dans le système</p>
+      </div>
+    </div>
+
+    <!-- Carte succès -->
+    <div class="success-card glass-card" *ngIf="success">
+      <div class="success-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <h2>Patient ajouté avec succès !</h2>
+      <p>Le compte a été créé. Communiquez le mot de passe temporaire au patient :</p>
+      <div class="password-box">
+        <span class="password-label">Mot de passe temporaire</span>
+        <span class="password-val">{{ motDePasseTemp }}</span>
+      </div>
+      <div class="success-actions">
+        <button class="btn-secondary" (click)="ajouterAutre()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Ajouter un autre
+        </button>
+        <button class="btn-primary" (click)="retour()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+          </svg>
+          Voir tous les patients
+        </button>
+      </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="form-card glass-card" *ngIf="!success">
+      <div class="form-icon-header">
+        <div class="form-icon-wrap">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+            <line x1="12" y1="11" x2="12" y2="17"></line>
+            <line x1="9" y1="14" x2="15" y2="14"></line>
+          </svg>
+        </div>
+        <div>
+          <h2 class="form-heading">Informations du patient</h2>
+          <p class="form-sub">Tous les champs marqués <span class="req">*</span> sont obligatoires</p>
+        </div>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div class="alert-error" *ngIf="erreur">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        {{ erreur }}
+      </div>
+
+      <form (ngSubmit)="valider()" #f="ngForm" novalidate>
+        <div class="form-grid">
+          <!-- Nom -->
+          <div class="form-group">
+            <label for="nom">Nom <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <input
+                id="nom" name="nom" type="text"
+                [(ngModel)]="nom" required
+                placeholder="Ex : Dupont"
+                autocomplete="family-name">
+            </div>
+          </div>
+
+          <!-- Prénom -->
+          <div class="form-group">
+            <label for="prenom">Prénom <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <input
+                id="prenom" name="prenom" type="text"
+                [(ngModel)]="prenom" required
+                placeholder="Ex : Jean"
+                autocomplete="given-name">
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group full">
+            <label for="email">Adresse email <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <input
+                id="email" name="email" type="email"
+                [(ngModel)]="email" required
+                placeholder="patient@exemple.com"
+                autocomplete="email">
+            </div>
+          </div>
+
+          <!-- Téléphone -->
+          <div class="form-group full">
+            <label for="telephone">Numéro de téléphone</label>
+            <div class="input-wrap">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12
+                  19.79 19.79 0 0 1 1.61 3.35 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72
+                  12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8.91
+                  a16 16 0 0 0 7 7l1.27-1.27a2 2 0 0 1 2.11-.45
+                  12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              <input
+                id="telephone" name="telephone" type="tel"
+                [(ngModel)]="telephone"
+                placeholder="Ex : +216 55 123 456"
+                autocomplete="tel">
+            </div>
+          </div>
+        </div>
+
+        <!-- Bouton de validation -->
+        <div class="form-footer">
+          <button type="button" class="btn-cancel" (click)="retour()">Annuler</button>
+          <button type="submit" class="btn-primary" [disabled]="loading">
+            <span class="spinner" *ngIf="loading"></span>
+            <svg *ngIf="!loading" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            {{ loading ? 'Enregistrement...' : 'Valider et enregistrer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

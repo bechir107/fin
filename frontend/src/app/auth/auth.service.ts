@@ -54,7 +54,7 @@ export class AuthService {
 
     // Retourne dans la zone Angular pour la navigation
     this.ngZone.run(() => {
-      this.router.navigate(['/escpacep/rdvp']);
+      this.router.navigate(['/espacep']);
     });
   }
 
@@ -67,6 +67,8 @@ export class AuthService {
   logout(): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem(this.USER_KEY);
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_token');
       if ((window as any).google) {
         (window as any).google.accounts.id.disableAutoSelect();
       }
@@ -76,7 +78,8 @@ export class AuthService {
 
   get isLoggedIn(): boolean {
     if (!isPlatformBrowser(this.platformId)) return false;
-    return !!localStorage.getItem(this.USER_KEY);
+    // Check both Google auth and regular login auth
+    return !!localStorage.getItem(this.USER_KEY) || !!localStorage.getItem('auth_user');
   }
 
   get user(): GoogleUser | null {

@@ -1,0 +1,37 @@
+<div class="modal-container">
+  <h2>📅 Programmer un Rendez-vous</h2>
+  <hr>
+
+  <form [formGroup]="rdvForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label>Patient</label>
+      <select formControlName="id_patient" class="form-control">
+        <option value="" disabled selected>-- Sélectionner un patient --</option>
+        <option *ngFor="let p of patients" [value]="p.id_patient">{{ p.nom_complet }}</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date du rendez-vous</label>
+        <input type="date" formControlName="date_rendez_vous" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Heure</label>
+        <select formControlName="heure" class="form-control">
+          <option value="" disabled selected>-- Sélectionner une heure --</option>
+          <option *ngFor="let slot of availableSlots" [value]="slot">{{ slot }}</option>
+        </select>
+        <small class="text-danger" *ngIf="rdvForm.get('date_rendez_vous')?.value && availableSlots.length === 0" style="color: #ea580c; font-size: 0.85rem; margin-top: 0.2rem; display: block;">Aucune disponibilité pour cette date.</small>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-cancel" (click)="annuler()">Annuler</button>
+      <button type="submit" class="btn-submit" [disabled]="rdvForm.invalid || isSubmitting">
+        <span *ngIf="!isSubmitting">Enregistrer le RDV</span>
+        <span *ngIf="isSubmitting"><i class="fas fa-spinner fa-spin"></i> En cours...</span>
+      </button>
+    </div>
+  </form>
+</div>

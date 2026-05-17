@@ -1,0 +1,77 @@
+<!-- ═══════════════ DISPONIBILITÉS ═══════════════ -->
+<section class="section">
+
+  <!-- Horaires -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Mes horaires de consultation</h2>
+    </div>
+    <p class="panel-desc">Définissez vos plages horaires disponibles pour chaque jour de la semaine.</p>
+
+    <div class="avail-grid">
+      <div class="avail-day" *ngFor="let day of dayNames; let i = index">
+        <div class="avail-day-head">
+          <span class="avail-day-name">{{ day }}</span>
+          <span class="avail-count">{{ availability[i].length }} créneau{{ availability[i].length !== 1 ? 'x' : '' }}</span>
+        </div>
+        <div class="avail-slots">
+          <div class="avail-slot-row" *ngFor="let slot of availability[i]; let j = index">
+            <input type="time" class="time-input" [(ngModel)]="availability[i][j].start" />
+            <span class="time-sep">→</span>
+            <input type="time" class="time-input" [(ngModel)]="availability[i][j].end" />
+            <button class="remove-btn" (click)="removeSlot(i, j)">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <button class="add-slot-btn" (click)="addSlot(i)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ajouter créneau
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paramètres généraux -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Paramètres généraux</h2>
+    </div>
+    <div class="settings-list">
+      <div class="setting-row">
+        <div class="setting-info">
+          <p class="setting-label">Réservations en ligne</p>
+          <p class="setting-desc">Permettre aux patients de réserver via le portail web</p>
+        </div>
+        <div class="toggle" [class.on]="settings.onlineBooking" (click)="settings.onlineBooking = !settings.onlineBooking">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <p class="setting-label">Rappels automatiques</p>
+          <p class="setting-desc">Envoyer des notifications par email 24h avant le RDV</p>
+        </div>
+        <div class="toggle" [class.on]="settings.reminders" (click)="settings.reminders = !settings.reminders">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <p class="setting-label">Annulations en ligne</p>
+          <p class="setting-desc">Permettre aux patients d'annuler via le portail</p>
+        </div>
+        <div class="toggle" [class.on]="settings.onlineCancel" (click)="settings.onlineCancel = !settings.onlineCancel">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel-footer">
+      <button class="btn-primary" (click)="save()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Sauvegarder
+      </button>
+    </div>
+  </div>
+
+</section>

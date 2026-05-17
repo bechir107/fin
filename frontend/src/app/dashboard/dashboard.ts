@@ -1,29 +1,53 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, NavigationEnd, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Service } from '../nut/service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
 export class Dashboard implements OnInit {
-  role: string = '';
-  user: any = null;
 
-  constructor(private router: Router, private service: Service) {}
+  searchQuery: string = '';
+  showRdvSubmenu: boolean = false;
 
-  ngOnInit() {
-    this.user = this.service.cuurrentUser;
-    this.role = this.user?.role || 'patient';
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    // Garde le sous-menu ouvert si la page active est déjà 'rdv' ou 'calendrier' (ex: après un F5)
+    this.checkActiveRoute(this.router.url);
+
+    // Écoute les changements de route pour adapter le sous-menu dynamiquement
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      this.checkActiveRoute(event.url);
+    });
   }
 
-  logout() {
-    localStorage.removeItem('user');
-    localStorage.removeItem('user_data');
-    this.service.cuurrentUser = null;
+  toggleRdvSubmenu(event: MouseEvent): void {
+    // Inverse l'état du sous-menu au clic sur l'élément parent
+    this.showRdvSubmenu = !this.showRdvSubmenu;
+  }
+
+  private checkActiveRoute(url: string): void {
+    if (url.includes('/dashboard/rdv') || url.includes('/dashboard/calendrier')) {
+      this.showRdvSubmenu = true;
+    }
+  }
+
+  onSearch(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchQuery = input.value;
+  }
+
+  logout(): void {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
     this.router.navigate(['/login']);
-  }}
+  }
+}

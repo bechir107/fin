@@ -35,7 +35,6 @@ export class Createacc implements OnInit {
       // Step 2 — Patient
       sexe: ['', Validators.required],
       adresse: ['', Validators.required],
-      taille: ['', [Validators.required, Validators.min(50), Validators.max(250)]],
       allergie: [''],
       maladie_chronique: [''],
       objectif: ['', Validators.required],
@@ -68,7 +67,6 @@ export class Createacc implements OnInit {
               telephone: profile.telephone || '',
               sexe: profile.sexe || '',
               adresse: profile.adresse || '',
-              taille: profile.taille || '',
               allergie: profile.allergie || '',
               maladie_chronique: profile.maladie_chronique || '',
               objectif: profile.objectif || '',

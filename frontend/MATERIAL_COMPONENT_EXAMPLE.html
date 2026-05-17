@@ -1,0 +1,114 @@
+<!-- Example: Patient Component with Material Design -->
+
+<div class="patient-container">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div>
+      <h1>Gestion des Patients</h1>
+      <p>Gérez la liste complète des patients et leurs profils</p>
+    </div>
+    <button mat-raised-button color="primary">
+      <mat-icon>person_add</mat-icon>
+      Ajouter un patient
+    </button>
+  </div>
+
+  <!-- Search & Filter Section -->
+  <mat-card class="search-card">
+    <mat-card-content>
+      <div class="search-filter-row">
+        <mat-form-field appearance="fill" class="search-field">
+          <mat-label>Rechercher un patient</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [formControl]="searchControl">
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Trier par</mat-label>
+          <mat-icon matPrefix>sort</mat-icon>
+          <mat-select [formControl]="sortControl">
+            <mat-option value="name">Nom</mat-option>
+            <mat-option value="date">Date d'inscription</mat-option>
+            <mat-option value="status">Statut</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-stroked-button>
+          <mat-icon>tune</mat-icon>
+          Filtres
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Patients List - Card Layout -->
+  <div class="patients-grid">
+    <mat-card *ngFor="let patient of patients" class="patient-card" [routerLink]="['/dashboard/patient', patient.id]">
+      <mat-card-content>
+        <div class="card-header">
+          <div class="patient-avatar" [style.background]="patient.avatarColor">
+            {{ patient.initials }}
+          </div>
+          <div class="patient-header-info">
+            <h3>{{ patient.name }}</h3>
+            <p class="patient-email">{{ patient.email }}</p>
+          </div>
+          <button mat-icon-button [matMenuTriggerFor]="menu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item>
+              <mat-icon>edit</mat-icon>
+              <span>Modifier</span>
+            </button>
+            <button mat-menu-item>
+              <mat-icon>delete</mat-icon>
+              <span>Supprimer</span>
+            </button>
+          </mat-menu>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="patient-details">
+          <div class="detail-row">
+            <span class="detail-label">Âge</span>
+            <span class="detail-value">{{ patient.age }} ans</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Dernier RDV</span>
+            <span class="detail-value">{{ patient.lastAppointment | date:'shortDate' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Statut</span>
+            <mat-chip [color]="patient.status === 'actif' ? 'accent' : 'warn'" selected>
+              {{ patient.status }}
+            </mat-chip>
+          </div>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-stroked-button color="primary" class="action-button">
+          <mat-icon>calendar_today</mat-icon>
+          RDV
+        </button>
+        <button mat-stroked-button class="action-button">
+          <mat-icon>note</mat-icon>
+          Notes
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="patients.length === 0" class="empty-state">
+    <mat-icon class="empty-icon">person_outline</mat-icon>
+    <h3>Aucun patient trouvé</h3>
+    <p>Commencez par ajouter un nouveau patient</p>
+    <button mat-raised-button color="primary">
+      <mat-icon>person_add</mat-icon>
+      Créer un patient
+    </button>
+  </div>
+</div>

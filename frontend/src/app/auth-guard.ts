@@ -1,19 +1,17 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
-import { AuthService } from './auth/auth.service';
 
 export const authGuard: CanActivateFn = (route, state) => {
-
-  const authService = inject(AuthService);
   const router = inject(Router);
 
-  // Vérifier si l'utilisateur est connecté
-  if (authService.isLoggedIn) {
-    return true;
+  // On vérifie directement la clé que tu as sauvegardée dans ton login.ts
+  const token = localStorage.getItem('auth_token');
+
+  if (token) {
+    return true; // L'utilisateur a un token, on le laisse passer
   }
 
-  // Sinon redirection vers login
+  // Pas de token -> redirection vers le login
   router.navigate(['/login']);
   return false;
-
 };

@@ -4,7 +4,7 @@ import { DatePipe, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-rdv',
+  selector: 'app-rdv-patient',
   standalone: true,
   imports: [CommonModule, FormsModule, DatePipe],
   templateUrl: './rdvp.html',

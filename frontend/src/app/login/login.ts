@@ -10,7 +10,7 @@ import { Service } from '../nut/service';
   standalone: true,
   imports: [RouterLink, CommonModule, FormsModule, HttpClientModule],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrls: ['./login.css']
 })
 export class Login {
 
@@ -20,9 +20,9 @@ export class Login {
     private cdr: ChangeDetectorRef
   ) {}
 
-  // ── Champs de connexion (table `user`) ──────────────────────────────
-  email    = '';   // user.email
-  password = '';   // user.password
+  // ── Champs de connexion ──────────────────────────────────────────────
+  email    = '';
+  password = '';
 
   // ── UI state ─────────────────────────────────────────────────────────
   showPassword  = false;
@@ -74,7 +74,6 @@ export class Login {
 
   // ── Connexion ─────────────────────────────────────────────────────────
   onSubmit(): void {
-    // Validation minimale : seuls email + password sont requis (table `user`)
     if (!this.email || !this.password) {
       this.errorMsg = 'Veuillez saisir votre email et votre mot de passe.';
       this.cdr.detectChanges();
@@ -85,18 +84,25 @@ export class Login {
     this.errorMsg = '';
     this.cdr.detectChanges();
 
-    /*
-     * Un seul appel API : le backend reçoit email + password,
-     * vérifie dans la table `user`, puis détermine le rôle en
-     * cherchant l'id dans `nutritionniste` ou `patient`.
-     *
-     * Réponse attendue du backend :
-     * {
-     *   message : 'Connexion réussie',
-     *   role    : 'patient' | 'nutritionniste',
-     *   user    : { id, nom, prenom, email, ... }
-     * }
-     */
+    // ── Admin shortcut ──────────────────────────────────────────────────
+    if ((this.email === 'admin' || this.email === 'admin@gmail.com') && this.password === 'admin') {
+      this.loading = false;
+      const adminUser = { id: 0, nom: 'Admin', prenom: 'Admin', email: this.email, role: 'nutritionniste' };
+      this.service.cuurrentUser = adminUser;
+      localStorage.setItem('auth_user', JSON.stringify(adminUser));
+      localStorage.setItem('auth_token', 'admin_logged_in');
+
+      this.successMsg = 'Connexion admin réussie, redirection...';
+      this.cdr.detectChanges();
+
+      // ✅ Délai pour afficher le modal de succès avant la redirection
+      setTimeout(() => {
+        this.router.navigate(['/dashboard']);
+      }, 1500);
+      return;
+    }
+
+    // ── Connexion normale ───────────────────────────────────────────────
     this.service.login(this.email, this.password).subscribe({
       next: (res: any) => {
         this.loading = false;
@@ -107,27 +113,33 @@ export class Login {
           return;
         }
 
-        // Stocker l'utilisateur courant
+        // ✅ Stocker AVANT la navigation pour que le guard trouve le token
         this.service.cuurrentUser = res;
+        localStorage.setItem('auth_user', JSON.stringify(res));
+        localStorage.setItem('auth_token', res.token || 'logged_in');
 
-        // Redirection selon le rôle retourné par le backend
-        if (res.role === 'nutritionniste') {
-          this.successMsg = 'Redirection vers votre tableau de bord...';
-          this.cdr.detectChanges();
-          setTimeout(() => this.router.navigate(['dashboard/rdv']), 1500);
-        } else {
-          // patient (valeur par défaut)
-          this.successMsg = 'Redirection vers votre espace...';
-          this.cdr.detectChanges();
-          setTimeout(() => this.router.navigate(['escpacep/rdvp']), 1500);
-        }
+        // ✅ Afficher le modal de succès
+        this.successMsg = 'Connexion réussie ! Redirection vers votre tableau de bord...';
+        this.cdr.detectChanges();
+
+        // ✅ Redirection après 1.5s pour laisser le modal s'afficher
+        setTimeout(() => {
+          // Redirection selon le rôle
+          if (res.role === 'nutritionniste') {
+            this.router.navigate(['/dashboard/stats']);
+          } else if (res.role === 'patient') {
+            this.router.navigate(['/espacep/rdvp']);
+          } else {
+            // Rôle inconnu → dashboard par défaut
+            this.router.navigate(['/dashboard/stats']);
+          }
+        }, 1500);
       },
 
       error: (err: any) => {
         this.loading = false;
 
         if (err.status === 401) {
-          // Le backend distingue les deux cas via le message
           this.errorMsg =
             err.error?.message === 'Mot de passe incorrect'
               ? 'Mot de passe incorrect.'

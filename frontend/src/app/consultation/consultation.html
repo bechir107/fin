@@ -1,272 +1,521 @@
-<div class="page-wrapper">
+<div class="cs-root">
 
-    <!-- ── Header ── -->
-    <div class="page-header">
-        <div class="page-title-block">
-            <div class="page-icon"><i class="ti ti-stethoscope"></i></div>
-            <div>
-                <h1 class="page-title">Consultations</h1>
-                <p class="page-subtitle">Suivi des bilans et séances nutritionnelles</p>
-            </div>
+  <!-- ══ TOPBAR ══ -->
+  <div class="cs-topbar">
+    <div class="cs-title-block">
+      <h1 class="cs-title">Consultations</h1>
+      <span class="cs-count">{{ total }} consultation(s)</span>
+    </div>
+
+    <div class="cs-controls">
+      <!-- Recherche -->
+      <div class="cs-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#111827"
+             stroke-width="2.2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" placeholder="Rechercher patient, diagnostic…"
+               (input)="onSearch($any($event.target).value)">
+      </div>
+
+      <!-- Filtre diagnostic -->
+      <select class="cs-filter" (change)="onFilterDiag($any($event.target).value)">
+        <option value="">Tous les diagnostics</option>
+        <option *ngFor="let d of diagnostics" [value]="d">{{ d | titlecase }}</option>
+      </select>
+
+      <!-- Bouton ajouter -->
+      <button class="cs-btn-add" (click)="openCreate()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Nouvelle consultation
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ══ ÉTAT CHARGEMENT ══ -->
+  <div class="cs-loading" *ngIf="loading">
+    <span class="cs-spinner"></span>
+    <span>Chargement…</span>
+  </div>
+
+
+  <!-- ══ GRILLE DE CARDS (groupées par id_rendez_vous) ══ -->
+  <div class="cs-grid" *ngIf="!loading && consultations.length > 0">
+    <div class="cs-card" *ngFor="let g of groupedConsultations; trackBy: trackByRdv"
+         [class.cs-card-minimized]="minimizedCardIds.has(g.id_rendez_vous)">
+
+      <!-- ── En-tête patient (toujours visible) ── -->
+      <div class="cs-card-head">
+        <div class="cs-avatar">
+          {{ g.prenom?.[0]?.toUpperCase() }}{{ g.nom?.[0]?.toUpperCase() }}
         </div>
-        <button class="btn-primary" (click)="openCreate()">
-            <i class="ti ti-plus"></i> Nouvelle consultation
+        <div class="cs-card-identity">
+          <span class="cs-patient-name">{{ g.prenom }} {{ g.nom }}</span>
+          <span class="cs-rdv-badge">RDV #{{ g.id_rendez_vous }}</span>
+        </div>
+        <span class="cs-entry-count" *ngIf="g.items.length > 1">
+          {{ g.items.length }} séances
+        </span>
+      </div>
+
+      <!-- ── Vue RÉDUITE (quand dossier ouvert) ── -->
+      <div class="cs-card-mini" *ngIf="minimizedCardIds.has(g.id_rendez_vous)">
+        <ng-container *ngFor="let c of g.items">
+          <div class="cs-mini-row">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span class="cs-mini-date">{{ c.date_consultation | date:'dd/MM/yyyy' }}</span>
+            <span class="cs-mini-poids">{{ c.poids | number:'1.1-1' }} kg</span>
+            <span class="cs-diag-badge cs-mini-diag" *ngIf="c.diagnostic"
+                  [ngClass]="diagClass(c.diagnostic)">
+              {{ c.diagnostic | titlecase }}
+            </span>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- ── Vue COMPLÈTE (par défaut) ── -->
+      <ng-container *ngIf="!minimizedCardIds.has(g.id_rendez_vous)">
+
+        <div class="cs-consultation-entry"
+             *ngFor="let c of g.items; let last = last"
+             [class.cs-entry-last]="last">
+
+          <div class="cs-entry-date">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            {{ c.date_consultation | date:'dd/MM/yyyy' }}
+          </div>
+
+          <div class="cs-metrics">
+            <div class="cs-metric">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span class="cs-metric-val">{{ c.poids | number:'1.1-1' }} kg</span>
+              <span class="cs-metric-badge" [ngClass]="imcClass(c.poids)">{{ imcLabel(c.poids) }}</span>
+            </div>
+            <div class="cs-metric" *ngIf="c.tension_arterielle">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              <span class="cs-metric-val">{{ c.tension_arterielle }}</span>
+            </div>
+            <div class="cs-metric" *ngIf="c.glycemie">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+              </svg>
+              <span class="cs-metric-val">{{ c.glycemie }}</span>
+            </div>
+          </div>
+
+          <div class="cs-diag-row" *ngIf="c.diagnostic">
+            <span class="cs-diag-badge" [ngClass]="diagClass(c.diagnostic)">
+              {{ c.diagnostic | titlecase }}
+            </span>
+          </div>
+
+          <div class="cs-remarque" *ngIf="c.remarque">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>{{ c.remarque }}</span>
+          </div>
+
+          <div class="cs-entry-actions">
+            <button class="cs-entry-btn cs-entry-edit" (click)="openEdit(c)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Modifier
+            </button>
+            <button class="cs-entry-btn cs-entry-delete" (click)="confirmDelete(c)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                <path d="M10 11v6"></path><path d="M14 11v6"></path>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+              </svg>
+              Supprimer
+            </button>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <!-- ── Footer : bouton Dossier ── -->
+      <div class="cs-card-footer">
+        <button class="cs-action cs-action-dossier" (click)="voirDossier(g)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#111827"
+               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          {{ minimizedCardIds.has(g.id_rendez_vous) ? 'Dossier ouvert' : 'Voir dossier' }}
         </button>
-    </div>
+      </div>
 
-    <!-- ── Stats ── -->
-    <div class="stats-grid" *ngIf="stats">
-        <div class="stat-card">
-            <div class="stat-icon teal"><i class="ti ti-clipboard-list"></i></div>
-            <div>
-                <div class="stat-label">Total consultations</div>
-                <div class="stat-value">{{ stats.total }}</div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon blue"><i class="ti ti-weight"></i></div>
-            <div>
-                <div class="stat-label">Poids moyen</div>
-                <div class="stat-value">{{ stats.poids_moyen }} kg</div>
-            </div>
-        </div>
-        <div class="stat-card" *ngFor="let d of stats.par_diagnostic | slice:0:2">
-            <div class="stat-icon amber"><i class="ti ti-chart-donut"></i></div>
-            <div>
-                <div class="stat-label">{{ d.label | titlecase }}</div>
-                <div class="stat-value">{{ d.count }} patient{{ d.count > 1 ? 's' : '' }}</div>
-            </div>
-        </div>
     </div>
+  </div>
 
-    <!-- ── Filters ── -->
-    <div class="filters-bar">
-        <div class="search-box">
-            <i class="ti ti-search"></i>
-            <input type="text" placeholder="Rechercher diagnostic, remarque..."
-                (input)="onSearch($any($event.target).value)" />
-        </div>
-        <select class="filter-select" (change)="onFilterDiag($any($event.target).value)">
-            <option value="">Tous les diagnostics</option>
-            <option *ngFor="let d of diagnostics" [value]="d">{{ d | titlecase }}</option>
-        </select>
-        <span class="result-count">{{ total }} résultat{{ total !== 1 ? 's' : '' }}</span>
-    </div>
 
-    <!-- ── Table ── -->
-    <div class="table-card">
-        <div class="table-scroll">
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Patient</th>
-                        <th>RDV</th>
-                        <th>Date</th>
-                        <th>Poids</th>
-                        <th>Tension</th>
-                        <th>Glycémie</th>
-                        <th>Diagnostic</th>
-                        <th>Remarque</th>
-                        <th class="col-actions">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngIf="loading">
-                        <td colspan="10" class="loading-row">
-                            <span class="spinner"></span> Chargement...
-                        </td>
-                    </tr>
-                    <tr *ngIf="!loading && consultations.length === 0">
-                        <td colspan="10" class="empty-row">
-                            <i class="ti ti-mood-empty"></i>
-                            <span>Aucune consultation trouvée</span>
-                        </td>
-                    </tr>
-                    <tr *ngFor="let c of consultations; trackBy: trackById">
-                        <td class="td-id">{{ c.id_consultation }}</td>
-                        <td>
-                            <div style="font-weight: 700; color: var(--primary-dark);">{{ c.nom }} {{ c.prenom }}</div>
-                            <div style="font-size: 12px; color: var(--text-muted);">ID: {{ c.id_patient }}</div>
-                        </td>
-                        <td>
-                            <span class="rdv-badge">RDV #{{ c.id_rendez_vous }}</span>
-                        </td>
-                        <td>
-                            <div class="date-cell">
-                                <i class="ti ti-calendar"></i>
-                                {{ c.date_consultation | date:'dd MMM yyyy' : '' : 'fr' }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="poids-cell">
-                                <span class="poids-val">{{ c.poids | number:'1.1-1' }} kg</span>
-                                <span class="badge" [ngClass]="imcClass(c.poids)">{{ imcLabel(c.poids) }}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="vitals">
-                                <i class="ti ti-heart-rate-monitor"></i>
-                                {{ c.tension_arterielle || '—' }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="vitals">
-                                <i class="ti ti-droplet"></i>
-                                {{ c.glycemie || '—' }}
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge" [ngClass]="diagClass(c.diagnostic)">
-                                {{ c.diagnostic || '—' }}
-                            </span>
-                        </td>
-                        <td class="remarque-cell" [title]="c.remarque">{{ c.remarque || '—' }}</td>
-                        <td>
-                            <div class="actions">
-                                <button class="icon-btn edit" (click)="openEdit(c)" title="Modifier">
-                                    <i class="ti ti-edit"></i>
-                                </button>
-                                <button class="icon-btn del" (click)="confirmDelete(c)" title="Supprimer">
-                                    <i class="ti ti-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <!-- ══ ÉTAT VIDE ══ -->
+  <div class="cs-empty" *ngIf="!loading && consultations.length === 0">
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.2">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+      <polyline points="14 2 14 8 20 8"></polyline>
+      <line x1="16" y1="13" x2="8" y2="13"></line>
+      <line x1="16" y1="17" x2="8" y2="17"></line>
+      <polyline points="10 9 9 9 8 9"></polyline>
+    </svg>
+    <p>Aucune consultation trouvée.</p>
+    <button class="cs-btn-add" (click)="openCreate()">Ajouter la première consultation</button>
+  </div>
 
-        <!-- Pagination -->
-        <div class="pagination" *ngIf="totalPages > 1">
-            <span class="pag-info">Page {{ page }} / {{ totalPages }}</span>
-            <div class="pag-btns">
-                <button class="pag-btn" [disabled]="page === 1" (click)="goPage(page - 1)">
-                    <i class="ti ti-chevron-left"></i>
-                </button>
-                <button *ngFor="let p of pages" class="pag-btn" [class.active]="p === page" (click)="goPage(p)">{{ p
-                    }}</button>
-                <button class="pag-btn" [disabled]="page === totalPages" (click)="goPage(page + 1)">
-                    <i class="ti ti-chevron-right"></i>
-                </button>
-            </div>
-        </div>
-    </div>
+
+  <!-- ══ PAGINATION ══ -->
+  <div class="cs-pagination" *ngIf="totalPages > 1">
+    <button class="cs-pag-btn" [disabled]="page === 1" (click)="goPage(page - 1)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <button *ngFor="let p of pages" class="cs-pag-btn" [class.active]="p === page" (click)="goPage(p)">
+      {{ p }}
+    </button>
+    <button class="cs-pag-btn" [disabled]="page === totalPages" (click)="goPage(page + 1)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+  </div>
 
 </div>
 
-<!-- ══════════════════════════════════════
+
+<!-- ══════════════════════════════════════════════
      MODAL — Ajouter / Modifier
-════════════════════════════════════════ -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-    <div class="modal" (click)="$event.stopPropagation()" role="dialog"
-        [attr.aria-label]="isEditing ? 'Modifier la consultation' : 'Nouvelle consultation'">
+══════════════════════════════════════════════ -->
+<div class="cs-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="cs-modal" (click)="$event.stopPropagation()">
 
-        <div class="modal-header">
-            <div class="modal-title">
-                <i class="ti" [ngClass]="isEditing ? 'ti-edit' : 'ti-plus'"></i>
-                {{ isEditing ? 'Modifier la consultation' : 'Nouvelle consultation' }}
-            </div>
-            <button class="modal-close" (click)="closeModal()" aria-label="Fermer">
-                <i class="ti ti-x"></i>
-            </button>
-        </div>
-
-        <form [formGroup]="form" (ngSubmit)="save()" class="modal-body">
-
-            <div class="form-section-label">Informations de base</div>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>N° Rendez-vous <span class="req">*</span></label>
-                    <input type="number" formControlName="id_rendez_vous" placeholder="ex: 1"
-                        [class.invalid]="field('id_rendez_vous')?.invalid && field('id_rendez_vous')?.touched" />
-                    <div class="error-msg" *ngIf="field('id_rendez_vous')?.invalid && field('id_rendez_vous')?.touched">
-                        Champ requis, valeur ≥ 1
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Date <span class="req">*</span></label>
-                    <input type="date" formControlName="date_consultation"
-                        [class.invalid]="field('date_consultation')?.invalid && field('date_consultation')?.touched" />
-                    <div class="error-msg"
-                        *ngIf="field('date_consultation')?.invalid && field('date_consultation')?.touched">
-                        Date requise
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-section-label">Données biométriques</div>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Poids (kg) <span class="req">*</span></label>
-                    <input type="number" step="0.1" formControlName="poids" placeholder="ex: 72.5"
-                        [class.invalid]="field('poids')?.invalid && field('poids')?.touched" />
-                    <div class="error-msg" *ngIf="field('poids')?.invalid && field('poids')?.touched">
-                        Entre 20 et 300 kg
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Tension artérielle</label>
-                    <input type="text" formControlName="tension_arterielle" placeholder="ex: 12/8" />
-                </div>
-                <div class="form-group">
-                    <label>Glycémie</label>
-                    <input type="text" formControlName="glycemie" placeholder="ex: 1.1 g/L" />
-                </div>
-                <div class="form-group">
-                    <label>Diagnostic</label>
-                    <select formControlName="diagnostic">
-                        <option value="">Sélectionner...</option>
-                        <option *ngFor="let d of diagnostics" [value]="d">{{ d | titlecase }}</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-section-label">Notes cliniques</div>
-            <div class="form-group full">
-                <label>Remarque</label>
-                <textarea formControlName="remarque" rows="3"
-                    placeholder="Observations, recommandations alimentaires..."></textarea>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn-cancel" (click)="closeModal()">Annuler</button>
-                <button type="submit" class="btn-primary" [disabled]="saving">
-                    <i class="ti" [ngClass]="saving ? 'ti-loader-2' : 'ti-check'"></i>
-                    {{ saving ? 'Enregistrement...' : (isEditing ? 'Modifier' : 'Ajouter') }}
-                </button>
-            </div>
-        </form>
+    <div class="cs-modal-head">
+      <div class="cs-modal-title-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111827"
+             stroke-width="2.2" stroke-linecap="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        <span class="cs-modal-title">
+          {{ isEditing ? 'Modifier la consultation' : 'Nouvelle consultation' }}
+        </span>
+      </div>
+      <button class="cs-modal-close" (click)="closeModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
+
+    <form [formGroup]="form" (ngSubmit)="save()" class="cs-modal-body">
+
+      <!-- ── Patient ── -->
+      <div class="cs-section-label">Patient</div>
+
+      <!-- Patient déjà sélectionné -->
+      <div class="cs-selected-patient" *ngIf="selectedPatient">
+        <div class="cs-sel-avatar">
+          {{ selectedPatient.prenom?.[0]?.toUpperCase() }}{{ selectedPatient.nom?.[0]?.toUpperCase() }}
+        </div>
+        <span class="cs-sel-name">{{ selectedPatient.prenom }} {{ selectedPatient.nom }}</span>
+        <button type="button" class="cs-sel-clear" (click)="clearPatient()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Champ de recherche patient -->
+      <div class="cs-patient-search-wrap" *ngIf="!selectedPatient">
+        <div class="cs-patient-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af"
+               stroke-width="2.2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            placeholder="Rechercher un patient par nom…"
+            [value]="patientSearch"
+            (input)="onPatientSearch($any($event.target).value)"
+            (focus)="showAllPatients()"
+            (blur)="closeDropdownDelayed()">
+        </div>
+        <div class="cs-patient-dropdown" *ngIf="showPatientDropdown && filteredPatients.length > 0">
+          <div class="cs-patient-option" *ngFor="let p of filteredPatients" (mousedown)="selectPatient(p)">
+            <div class="cs-opt-avatar">
+              {{ p.prenom?.[0]?.toUpperCase() }}{{ p.nom?.[0]?.toUpperCase() }}
+            </div>
+            <span>{{ p.prenom }} {{ p.nom }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cs-section-label">Informations de base</div>
+      <div class="cs-form-grid">
+        <div class="cs-field">
+          <label>N° Rendez-vous <span class="cs-req">*</span></label>
+          <input type="number" formControlName="id_rendez_vous" placeholder="ex : 1"
+                 [class.cs-invalid]="field('id_rendez_vous')?.invalid && field('id_rendez_vous')?.touched">
+          <span class="cs-error" *ngIf="field('id_rendez_vous')?.invalid && field('id_rendez_vous')?.touched">
+            Champ requis (valeur ≥ 1)
+          </span>
+        </div>
+        <div class="cs-field">
+          <label>Date <span class="cs-req">*</span></label>
+          <input type="date" formControlName="date_consultation"
+                 [class.cs-invalid]="field('date_consultation')?.invalid && field('date_consultation')?.touched">
+          <span class="cs-error" *ngIf="field('date_consultation')?.invalid && field('date_consultation')?.touched">
+            Date requise
+          </span>
+        </div>
+      </div>
+
+      <div class="cs-section-label">Données biométriques</div>
+      <div class="cs-form-grid">
+        <div class="cs-field">
+          <label>Poids (kg) <span class="cs-req">*</span></label>
+          <input type="number" step="0.1" formControlName="poids" placeholder="ex : 72.5"
+                 [class.cs-invalid]="field('poids')?.invalid && field('poids')?.touched">
+          <span class="cs-error" *ngIf="field('poids')?.invalid && field('poids')?.touched">
+            Entre 20 et 300 kg
+          </span>
+        </div>
+        <div class="cs-field">
+          <label>Tension artérielle</label>
+          <input type="text" formControlName="tension_arterielle" placeholder="ex : 12/8">
+        </div>
+        <div class="cs-field">
+          <label>Glycémie</label>
+          <input type="text" formControlName="glycemie" placeholder="ex : 1.1 g/L">
+        </div>
+        <div class="cs-field">
+          <label>Diagnostic</label>
+          <select formControlName="diagnostic">
+            <option value="">Sélectionner…</option>
+            <option *ngFor="let d of diagnostics" [value]="d">{{ d | titlecase }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="cs-section-label">Notes cliniques</div>
+      <div class="cs-field cs-field-full">
+        <label>Remarque</label>
+        <textarea formControlName="remarque" rows="3"
+                  placeholder="Observations, recommandations alimentaires…"></textarea>
+      </div>
+
+      <div class="cs-modal-footer">
+        <button type="button" class="cs-btn-cancel" (click)="closeModal()">Annuler</button>
+        <button type="submit" class="cs-btn-save" [disabled]="saving">
+          <span class="cs-btn-spinner" *ngIf="saving"></span>
+          <svg *ngIf="!saving" width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          {{ saving ? 'Enregistrement…' : (isEditing ? 'Enregistrer les modifications' : 'Ajouter') }}
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
-<!-- ══════════════════════════════════════
+
+<!-- ══════════════════════════════════════════════
      MODAL — Confirmer suppression
-════════════════════════════════════════ -->
-<div class="modal-overlay" *ngIf="showDeleteModal" (click)="cancelDelete()">
-    <div class="modal modal-sm" (click)="$event.stopPropagation()" role="dialog">
-        <div class="modal-header danger-header">
-            <div class="modal-title"><i class="ti ti-alert-triangle"></i> Confirmer la suppression</div>
-            <button class="modal-close" (click)="cancelDelete()"><i class="ti ti-x"></i></button>
-        </div>
-        <div class="modal-body">
-            <p class="delete-msg">
-                Voulez-vous vraiment supprimer la consultation <strong>#{{ deleteTarget?.id_consultation }}</strong>
-                du <strong>{{ deleteTarget?.date_consultation }}</strong> ?
-                Cette action est irréversible.
-            </p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
-            <button class="btn-danger" (click)="doDelete()">
-                <i class="ti ti-trash"></i> Supprimer
-            </button>
-        </div>
+══════════════════════════════════════════════ -->
+<div class="cs-overlay" *ngIf="showDeleteModal" (click)="cancelDelete()">
+  <div class="cs-modal cs-modal-sm" (click)="$event.stopPropagation()">
+    <div class="cs-modal-head cs-modal-head-danger">
+      <div class="cs-modal-title-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626"
+             stroke-width="2.2" stroke-linecap="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <span class="cs-modal-title">Confirmer la suppression</span>
+      </div>
+      <button class="cs-modal-close" (click)="cancelDelete()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
+    <div class="cs-delete-body">
+      <p>Voulez-vous supprimer la consultation <strong>#{{ deleteTarget?.id_consultation }}</strong>
+        du <strong>{{ deleteTarget?.date_consultation }}</strong> ?
+        Cette action est irréversible.
+      </p>
+    </div>
+    <div class="cs-modal-footer">
+      <button class="cs-btn-cancel" (click)="cancelDelete()">Annuler</button>
+      <button class="cs-btn-danger" (click)="doDelete()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+        </svg>
+        Supprimer
+      </button>
+    </div>
+  </div>
 </div>
 
-<!-- ── Toast ── -->
-<div class="toast" *ngIf="toast" [ngClass]="'toast-' + toast.type">
-    <i class="ti" [ngClass]="toast.type === 'success' ? 'ti-circle-check' : 'ti-circle-x'"></i>
-    {{ toast.msg }}
+
+<!-- ══════════════════════════════════════════════
+     DOSSIER PATIENT — panneau latéral
+══════════════════════════════════════════════ -->
+<div class="cs-dossier-overlay" *ngIf="showDossier" (click)="closeDossier()">
+  <div class="cs-dossier-panel" (click)="$event.stopPropagation()">
+
+    <!-- En-tête patient -->
+    <div class="cs-dossier-head">
+      <div class="cs-dossier-patient-info">
+        <div class="cs-dossier-avatar">
+          {{ dossierPatient?.prenom?.[0]?.toUpperCase() }}{{ dossierPatient?.nom?.[0]?.toUpperCase() }}
+        </div>
+        <div>
+          <h2 class="cs-dossier-name">{{ dossierPatient?.prenom }} {{ dossierPatient?.nom }}</h2>
+          <p class="cs-dossier-email">{{ dossierPatient?.email || dossierPatient?.telephone || '—' }}</p>
+        </div>
+      </div>
+      <button class="cs-dossier-close" (click)="closeDossier()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Chips info patient -->
+    <div class="cs-dossier-meta" *ngIf="dossierPatient">
+      <span class="cs-dossier-meta-chip" *ngIf="dossierPatient.objectif">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2.2">
+          <circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle>
+        </svg>
+        {{ dossierPatient.objectif }}
+      </span>
+      <span class="cs-dossier-meta-chip" *ngIf="dossierPatient.sexe">
+        {{ dossierPatient.sexe }}
+      </span>
+      <span class="cs-dossier-meta-chip"
+            style="border-color:#fecaca;background:#fef2f2;color:#b91c1c"
+            *ngIf="dossierPatient.maladie_chronique && dossierPatient.maladie_chronique !== 'Aucune'">
+        {{ dossierPatient.maladie_chronique }}
+      </span>
+    </div>
+
+    <!-- Corps : historique -->
+    <div class="cs-dossier-body">
+      <p class="cs-dossier-subtitle">
+        Historique des consultations
+        <span class="cs-count" style="margin-left:6px">{{ dossierConsultations.length }}</span>
+      </p>
+
+      <div class="cs-loading" *ngIf="loadingDossier">
+        <span class="cs-spinner"></span>
+        <span>Chargement…</span>
+      </div>
+
+      <div class="cs-dossier-empty" *ngIf="!loadingDossier && dossierConsultations.length === 0">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        <p>Aucune consultation enregistrée.</p>
+      </div>
+
+      <div class="cs-history-list" *ngIf="!loadingDossier && dossierConsultations.length > 0">
+        <div class="cs-history-item" *ngFor="let h of dossierConsultations">
+
+          <!-- Date + RDV -->
+          <div class="cs-history-date">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            {{ h.date_consultation | date:'dd/MM/yyyy' }}
+          </div>
+
+          <!-- Métriques -->
+          <div class="cs-history-metrics">
+            <span class="cs-history-metric-chip" *ngIf="h.poids">
+              {{ h.poids | number:'1.1-1' }} kg
+            </span>
+            <span class="cs-history-metric-chip" *ngIf="h.tension_arterielle">
+              TA : {{ h.tension_arterielle }}
+            </span>
+            <span class="cs-history-metric-chip" *ngIf="h.glycemie">
+              Gly : {{ h.glycemie }}
+            </span>
+          </div>
+
+          <!-- Diagnostic -->
+          <span class="cs-diag-badge" *ngIf="h.diagnostic"
+                [ngClass]="diagClass(h.diagnostic)">
+            {{ h.diagnostic | titlecase }}
+          </span>
+
+          <!-- Remarque -->
+          <p class="cs-history-remarque" *ngIf="h.remarque">{{ h.remarque }}</p>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══ TOAST ══ -->
+<div class="cs-toast" *ngIf="toast" [ngClass]="'cs-toast-' + toast.type">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="2.5" stroke-linecap="round">
+    <ng-container *ngIf="toast.type === 'success'">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </ng-container>
+    <ng-container *ngIf="toast.type === 'error'">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="15" y1="9" x2="9" y2="15"></line>
+      <line x1="9" y1="9" x2="15" y2="15"></line>
+    </ng-container>
+  </svg>
+  {{ toast.msg }}
 </div>

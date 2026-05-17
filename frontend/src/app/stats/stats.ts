@@ -1,14 +1,20 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
+
+// IMPORTANT : Importez le COMPOSANT, pas seulement le fichier. 
+// Vérifiez que le chemin '../rdv/rdv' est correct.
+import { Rdv } from '../rdv/rdv'; 
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-stats',
   standalone: true,
-  imports: [CommonModule],
+  // Utilisez RdvComponent ici (le nom de la classe dans rdv.ts)
+  imports: [CommonModule, RouterLink, Rdv], 
   templateUrl: './stats.html',
   styleUrls: ['./stats.css']
 })
@@ -35,7 +41,8 @@ export class Stats implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.initCharts();
+    // Un léger délai permet de s'assurer que le DOM est bien stable
+    setTimeout(() => this.initCharts(), 0);
   }
 
   fetchData() {
@@ -52,7 +59,6 @@ export class Stats implements OnInit, AfterViewInit {
         }
       },
       error: () => {
-        // Fallback mock data
         this.monthlyRdv = 124;
         this.confirmRate = '85%';
         this.cancelRate = '12%';
@@ -72,6 +78,7 @@ export class Stats implements OnInit, AfterViewInit {
   initCharts() {
     if (!this.activityChartRef || !this.typesChartRef || !this.ageChartRef) return;
 
+    // Graphique Activité
     this.activityChartInstance = new Chart(this.activityChartRef.nativeElement, {
       type: 'line',
       data: {
@@ -88,16 +95,11 @@ export class Stats implements OnInit, AfterViewInit {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false }
-        },
-        scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-          x: { grid: { display: false } }
-        }
+        plugins: { legend: { display: false } }
       }
     });
 
+    // Graphique Types
     this.typesChartInstance = new Chart(this.typesChartRef.nativeElement, {
       type: 'doughnut',
       data: {
@@ -112,12 +114,11 @@ export class Stats implements OnInit, AfterViewInit {
         responsive: true,
         maintainAspectRatio: false,
         cutout: '70%',
-        plugins: {
-          legend: { position: 'bottom' }
-        }
+        plugins: { legend: { position: 'bottom' } }
       }
     });
 
+    // Graphique Âge
     this.ageChartInstance = new Chart(this.ageChartRef.nativeElement, {
       type: 'bar',
       data: {
@@ -132,11 +133,7 @@ export class Stats implements OnInit, AfterViewInit {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-          x: { grid: { display: false } }
-        }
+        plugins: { legend: { display: false } }
       }
     });
   }

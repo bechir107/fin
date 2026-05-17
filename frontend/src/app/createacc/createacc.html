@@ -114,12 +114,6 @@
             <div class="error-msg" *ngIf="f['sexe'].touched && f['sexe'].invalid">Veuillez sélectionner votre sexe.
             </div>
           </div>
-          <div class="field-group">
-            <label for="taille">Taille (cm) <span class="required">*</span></label>
-            <input id="taille" type="number" formControlName="taille" placeholder="Ex: 175" min="50" max="250"
-              [class.invalid]="f['taille'].touched && f['taille'].invalid">
-            <div class="error-msg" *ngIf="f['taille'].touched && f['taille'].invalid">Taille invalide (50–250 cm).</div>
-          </div>
         </div>
 
         <div class="field-group">

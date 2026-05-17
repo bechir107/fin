@@ -1,401 +1,64 @@
-<!-- ── HEADER ── -->
-<header class="app-header">
-  <div class="header-brand">
-    <div class="brand-icon">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 6v6l4 2"/>
-      </svg>
+<div class="rdv-container">
+  <div class="page-header">
+    <div>
+      <h1>Rendez-vous du jour</h1>
+      <p class="current-date"><i class="far fa-calendar-alt"></i> {{ dateDuJour }}</p>
     </div>
-    <div class="brand-text">
-      <span class="brand-name">Cabinet Nutritionniste</span>
-      <span class="brand-sub">Système de gestion des rendez-vous</span>
+    <div class="stats-badge">
+      <span class="count">{{ rendezVousAujourdhui.length }}</span> Patients attendus
     </div>
   </div>
-  <div class="header-meta">
-    <span class="today-label">{{ todayLabel }}</span>
+
+  <hr class="separator" />
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement du planning quotidien...</p>
   </div>
-</header>
 
-<!-- ── NAV ── -->
-<nav class="app-nav">
-  <button class="nav-item" [class.active]="activeSection === 'calendar'" (click)="activeSection = 'calendar'">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-    Calendrier
-  </button>
-  <button class="nav-item" [class.active]="activeSection === 'appointments'" (click)="activeSection = 'appointments'">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-    Rendez-vous
-    <span class="nav-badge" *ngIf="pendingCount > 0">{{ pendingCount }}</span>
-  </button>
-  <button class="nav-item" [class.active]="activeSection === 'availability'" (click)="activeSection = 'availability'">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-    Disponibilités
-  </button>
-</nav>
+  <div *ngIf="errorMessage" class="error-banner">
+    <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+  </div>
 
-<!-- ── MAIN ── -->
-<main class="app-main">
+  <div *ngIf="!isLoading && rendezVousAujourdhui.length === 0" class="empty-state">
+    <div class="empty-icon">☕</div>
+    <h3>Aucun rendez-vous planifié pour aujourd'hui</h3>
+    <p>Profitez-en pour mettre à jour vos dossiers ou préparer vos fiches de suivi.</p>
+  </div>
 
-  <!-- ═══════════════ CALENDRIER ═══════════════ -->
-  <section *ngIf="activeSection === 'calendar'" class="section">
-
-    <!-- Stats rapides -->
-    <div class="kpi-row">
-      <div class="kpi-card">
-        <p class="kpi-val">{{ data.length }}</p>
-        <p class="kpi-label">Aujourd'hui</p>
-      </div>
-      <div class="kpi-card">
-        <p class="kpi-val">{{ weekCount }}</p>
-        <p class="kpi-label">Cette semaine</p>
-      </div>
-      <div class="kpi-card">
-        <p class="kpi-val">{{ onlineCount }}</p>
-        <p class="kpi-label">En ligne</p>
-      </div>
-      <div class="kpi-card">
-        <p class="kpi-val">{{ phoneCount }}</p>
-        <p class="kpi-label">Téléphoniques</p>
-      </div>
-    </div>
-
-    <!-- Calendrier -->
-    <div class="panel">
-      <div class="panel-head">
-        <div class="cal-nav">
-          <button class="cal-arrow" (click)="changeMonth(-1)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <span class="cal-month">{{ currentMonthLabel }}</span>
-          <button class="cal-arrow" (click)="changeMonth(1)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
-        <button class="btn-accent" (click)="openPhoneModal()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Ajouter RDV
-        </button>
+  <div *ngIf="!isLoading && rendezVousAujourdhui.length > 0" class="timeline-list">
+    
+    <div *ngFor="let rdv of rendezVousAujourdhui" class="rdv-card" [ngClass]="{'is-temp': rdv.status === 'temporaire'}">
+      
+      <div class="time-col">
+        <span class="time-badge">{{ rdv.heure_rdv }}</span>
       </div>
 
-      <div class="cal-weekdays">
-        <div class="cal-wd" *ngFor="let d of weekDays">{{ d }}</div>
-      </div>
-
-      <div class="cal-grid">
-        <div class="cal-cell"
-          *ngFor="let cell of calendarCells"
-          [class.other-month]="cell.otherMonth"
-          [class.is-today]="cell.isToday"
-          [class.is-selected]="cell.dateStr === selectedDate"
-          (click)="cell.dateStr && !cell.otherMonth ? selectDate(cell.dateStr) : null">
-          <span class="cal-day-num">{{ cell.day }}</span>
-          <div class="cal-dots" *ngIf="cell.dateStr && !cell.otherMonth">
-            <span class="dot dot-booked"    *ngIf="getBooked(cell.dateStr) > 0"></span>
-            <span class="dot dot-pending"   *ngIf="getPending(cell.dateStr) > 0"></span>
-            <span class="dot dot-available" *ngIf="getAvailable(cell.dateStr) > 0"></span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Créneaux du jour -->
-    <div class="panel slide-in" *ngIf="selectedDate">
-      <div class="panel-head">
-        <h3 class="panel-title">Créneaux — {{ selectedDateLabel }}</h3>
-        <button class="btn-ghost" (click)="selectedDate = null">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Fermer
-        </button>
-      </div>
-      <div class="slots-grid">
-        <div class="slot"
-          *ngFor="let slot of timeSlots"
-          [class.slot-booked]="isBooked(selectedDate, slot)"
-          [class.slot-available]="!isBooked(selectedDate, slot) && isAvailableSlot(selectedDate, slot)"
-          [class.slot-disabled]="!isBooked(selectedDate, slot) && !isAvailableSlot(selectedDate, slot)"
-          [title]="getSlotTitle(selectedDate, slot)"
-          (click)="onSlotClick(selectedDate, slot)">
-          {{ slot }}
-        </div>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- ═══════════════ LISTE RDV ═══════════════ -->
-  <section *ngIf="activeSection === 'appointments'" class="section">
-
-    <!-- Filtres -->
-    <div class="filter-bar">
-      <div class="filter-tabs">
-        <button class="filter-tab" [class.active]="statusFilter === 'all'"       (click)="setFilter('all')">Tous</button>
-        <button class="filter-tab" [class.active]="statusFilter === 'pending'"   (click)="setFilter('pending')">En attente</button>
-        <button class="filter-tab" [class.active]="statusFilter === 'confirmed'" (click)="setFilter('confirmed')">Confirmés</button>
-        <button class="filter-tab" [class.active]="statusFilter === 'cancelled'" (click)="setFilter('cancelled')">Annulés</button>
-      </div>
-      <div class="search-wrap">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input class="search-input" type="text" placeholder="Rechercher un patient…" [(ngModel)]="searchQuery" (input)="filterAppointments()" />
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="rdv-list">
-        <div class="rdv-row"
-          *ngFor="let apt of filteredAppointments; let i = index"
-          [class.status-confirmed]="apt.statut === 'confirmed'"
-          [class.status-pending]="apt.statut === 'pending'"
-          [class.status-cancelled]="apt.statut === 'cancelled'"
-          [style.animation-delay]="i * 50 + 'ms'">
-
-          <div class="rdv-avatar">{{ apt.nom[0] }}{{ apt.prenom[0] }}</div>
-
-          <div class="rdv-info">
-            <p class="rdv-name">{{ apt.nom }} {{ apt.prenom }}</p>
-            <div class="rdv-meta">
-              <span>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                {{ apt.date_rdv | date:'dd/MM/yyyy' }}
-              </span>
-              <span>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                {{ apt.hrdv }}
-              </span>
-              <span *ngIf="apt.email">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                {{ apt.email }}
-              </span>
-            </div>
-          </div>
-
-          <span class="status-pill"
-            [class.pill-pending]="apt.statut === 'pending'"
-            [class.pill-confirmed]="apt.statut === 'confirmed'"
-            [class.pill-cancelled]="apt.statut === 'cancelled'">
-            {{ apt.statut === 'confirmed' ? 'Confirmé' : apt.statut === 'pending' ? 'En attente' : 'Annulé' }}
+      <div class="patient-info-col">
+        <div class="patient-main">
+          <h3>{{ rdv.nom }} {{ rdv.prenom }}</h3>
+          <span class="status-pill" [ngClass]="rdv.status === 'temporaire' ? 'pill-orange' : 'pill-green'">
+            {{ rdv.status === 'temporaire' ? 'Profil Téléphone' : 'Compte Enregistré' }}
           </span>
-
-          <div class="rdv-actions">
-            <button class="action-btn action-confirm" *ngIf="apt.statut === 'pending'" (click)="confirmAppointment(apt.id)" title="Accepter">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </button>
-            <button class="action-btn action-details" (click)="openDetailsModal(apt)" title="Détails">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </button>
-            <button class="action-btn action-cancel" *ngIf="apt.statut !== 'cancelled'" (click)="cancelAppointment(apt.id)" title="Refuser">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
         </div>
-
-        <div class="empty-state" *ngIf="filteredAppointments.length === 0">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-          <p>Aucun rendez-vous trouvé</p>
-        </div>
+        
+        <p class="phone-link">
+          <i class="fas fa-phone-alt"></i> {{ rdv.telephone }}
+        </p>
+        
+        <p class="motif" *ngIf="rdv.motif">
+          <span class="label">Motif :</span> {{ rdv.motif }}
+        </p>
       </div>
-    </div>
 
-  </section>
-
-  <!-- ═══════════════ DISPONIBILITÉS ═══════════════ -->
-  <section *ngIf="activeSection === 'availability'" class="section">
-
-    <div class="panel">
-      <div class="panel-head">
-        <h2 class="panel-title">Mes horaires de consultation</h2>
-      </div>
-      <p class="panel-desc">Définissez vos plages horaires disponibles pour chaque jour de la semaine.</p>
-
-      <div class="avail-grid">
-        <div class="avail-day" *ngFor="let day of dayNames; let i = index">
-          <div class="avail-day-head">
-            <span class="avail-day-name">{{ day }}</span>
-            <span class="avail-count">{{ availability[i].length }} créneau{{ availability[i].length !== 1 ? 'x' : '' }}</span>
-          </div>
-          <div class="avail-slots">
-            <div class="avail-slot-row" *ngFor="let slot of availability[i]; let j = index">
-              <input type="time" class="time-input" [(ngModel)]="availability[i][j].start" />
-              <span class="time-sep">→</span>
-              <input type="time" class="time-input" [(ngModel)]="availability[i][j].end" />
-              <button class="remove-btn" (click)="removeSlot(i, j)">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-          </div>
-          <button class="add-slot-btn" (click)="addSlot(i)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Ajouter créneau
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Paramètres -->
-    <div class="panel">
-      <div class="panel-head">
-        <h2 class="panel-title">Paramètres généraux</h2>
-      </div>
-      <div class="settings-list">
-        <div class="setting-row">
-          <div class="setting-info">
-            <p class="setting-label">Réservations en ligne</p>
-            <p class="setting-desc">Permettre aux patients de réserver via le portail web</p>
-          </div>
-          <div class="toggle" [class.on]="settings.onlineBooking" (click)="settings.onlineBooking = !settings.onlineBooking">
-            <div class="toggle-knob"></div>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-info">
-            <p class="setting-label">Rappels automatiques</p>
-            <p class="setting-desc">Envoyer des notifications par email 24h avant le RDV</p>
-          </div>
-          <div class="toggle" [class.on]="settings.reminders" (click)="settings.reminders = !settings.reminders">
-            <div class="toggle-knob"></div>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-info">
-            <p class="setting-label">Annulations en ligne</p>
-            <p class="setting-desc">Permettre aux patients d'annuler via le portail</p>
-          </div>
-          <div class="toggle" [class.on]="settings.onlineCancel" (click)="settings.onlineCancel = !settings.onlineCancel">
-            <div class="toggle-knob"></div>
-          </div>
-        </div>
-      </div>
-      <div class="panel-footer">
-        <button class="btn-primary" (click)="saveAvailability()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Sauvegarder
+      <div class="actions-col">
+        <button class="btn-consult" (click)="demarrerConsultation(rdv.id_patient, rdv.id_rdv)">
+          <i class="fas fa-folder-open"></i>
+          <span>Ouvrir le dossier & Consulter</span>
         </button>
       </div>
+
     </div>
 
-  </section>
-
-
-</main>
-
-<!-- ═══════════════ MODAL RDV TÉLÉPHONIQUE ═══════════════ -->
-<div class="modal-backdrop" [class.open]="showPhoneModal" (click)="onOverlayClick($event, 'phone')">
-  <div class="modal-box">
-    <div class="modal-head">
-      <h3 class="modal-title">Nouveau rendez-vous</h3>
-      <button class="modal-close" (click)="showPhoneModal = false">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-
-    <form (ngSubmit)="rdv()" #phoneForm="ngForm">
-      <div class="form-row">
-        <div class="form-field">
-          <label class="field-label">Prénom</label>
-          <input class="field-input" type="text" [(ngModel)]="nom" name="firstName" placeholder="Jean" required />
-        </div>
-        <div class="form-field">
-          <label class="field-label">Nom</label>
-          <input class="field-input" type="text" [(ngModel)]="prenom" name="lastName" placeholder="Dupont" required />
-        </div>
-      </div>
-      <div class="form-field">
-        <label class="field-label">Email <span class="field-opt">(optionnel)</span></label>
-        <input class="field-input" type="email" [(ngModel)]="email" name="email" placeholder="jean.dupont@email.com" />
-      </div>
-      <div class="form-field">
-        <label class="field-label">Téléphone</label>
-        <input class="field-input" type="tel" [(ngModel)]="telephone" name="telephone" placeholder="06 12 34 56 78" required />
-      </div>
-      <div class="form-field">
-        <label class="field-label">Date</label>
-        <input class="field-input" type="date" [(ngModel)]="date" name="date" required (change)="updatePhoneSlots()" />
-      </div>
-
-      <div class="form-field" *ngIf="date && phoneAvailableSlots.length > 0">
-        <label class="field-label">Heure</label>
-        <div class="slot-picker">
-          <button type="button" class="slot-pick-btn"
-            *ngFor="let s of phoneAvailableSlots"
-            [class.picked]="heure === s"
-            (click)="heure = s">
-            {{ s }}
-          </button>
-        </div>
-      </div>
-
-      <div class="no-slots" *ngIf="date && phoneAvailableSlots.length === 0">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Aucun créneau disponible pour cette date.
-      </div>
-
-      <div class="modal-foot">
-        <button type="button" class="btn-ghost" (click)="showPhoneModal = false">Annuler</button>
-        <button type="submit" class="btn-primary" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'En cours…' : 'Confirmer le RDV' }}
-        </button>
-      </div>
-    </form>
   </div>
-</div>
-
-<!-- ═══════════════ MODAL DÉTAILS ═══════════════ -->
-<div class="modal-backdrop" [class.open]="showDetailsModal" (click)="onOverlayClick($event, 'details')">
-  <div class="modal-box" *ngIf="selectedAppointment">
-    <div class="modal-head">
-      <h3 class="modal-title">Détails du rendez-vous</h3>
-      <button class="modal-close" (click)="showDetailsModal = false">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-
-    <div class="details-avatar-row">
-      <div class="details-avatar">{{ selectedAppointment.nom[0] }}{{ selectedAppointment.prenom[0] }}</div>
-      <div>
-        <p class="details-name">{{ selectedAppointment.nom }} {{ selectedAppointment.prenom }}</p>
-        <span class="status-pill"
-          [class.pill-pending]="selectedAppointment.statut === 'pending'"
-          [class.pill-confirmed]="selectedAppointment.statut === 'confirmed'"
-          [class.pill-cancelled]="selectedAppointment.statut === 'cancelled'">
-          {{ selectedAppointment.statut === 'confirmed' ? 'Confirmé' : selectedAppointment.statut === 'pending' ? 'En attente' : 'Annulé' }}
-        </span>
-      </div>
-    </div>
-
-    <div class="details-grid">
-      <div class="detail-item">
-        <span class="detail-key">Date</span>
-        <span class="detail-val">{{ selectedAppointment.date_rdv | date:'dd MMMM yyyy' }}</span>
-      </div>
-      <div class="detail-item">
-        <span class="detail-key">Heure</span>
-        <span class="detail-val">{{ selectedAppointment.hrdv }}</span>
-      </div>
-      <div class="detail-item" *ngIf="selectedAppointment.email">
-        <span class="detail-key">Email</span>
-        <span class="detail-val">{{ selectedAppointment.email }}</span>
-      </div>
-      <div class="detail-item">
-        <span class="detail-key">ID Patient</span>
-        <span class="detail-val mono">#{{ selectedAppointment.id }}</span>
-      </div>
-    </div>
-
-    <div class="modal-foot">
-      <button class="btn-ghost" (click)="showDetailsModal = false">Fermer</button>
-      <button class="btn-primary" *ngIf="selectedAppointment.statut === 'pending'"
-        (click)="confirmAppointment(selectedAppointment.id); showDetailsModal = false">
-        Confirmer ce RDV
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ── NOTIFICATION ── -->
-<div class="toast" [class.toast-show]="notifVisible"
-  [class.toast-success]="notifType === 'success'"
-  [class.toast-warning]="notifType === 'warning'"
-  [class.toast-error]="notifType === 'error'">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" *ngIf="notifType === 'success'"><polyline points="20 6 9 17 4 12"/></svg>
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" *ngIf="notifType === 'error'"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-  {{ notifMessage }}
 </div>

@@ -1,9 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { email } from '@angular/forms/signals';
 import { Router } from '@angular/router';
-import { error } from 'console';
-import { catchError, Observable, throwError, timeout } from 'rxjs'; // ✅ timeout importé ici
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -58,9 +56,34 @@ export class Service {
 getHeures(datehdv: string){
   return this.http.get<string[]>(`http://127.0.0.1:5000/heures/${datehdv}`);
 }
-  ajouterpatient(nom: string, prenom: string, ddn: string, sexe: string, email: string, password: string, telephone: string, adresse: string, taille: string, allergie: string, maladie_chronique: string, objectif: string, ddc: string): Observable<any> {
+
+getPatientsDropdown() {
+  return this.http.get<any[]>('http://127.0.0.1:5000/api/patients');
+}
+
+getAvailableSlots(date: string) {
+  return this.http.get<string[]>(`http://127.0.0.1:5000/api/available-slots/${date}`);
+}
+
+createAppointment(id_patient: number, date_rendez_vous: string, heure: string, id_nutritionniste: number = 1) {
+  return this.http.post('http://127.0.0.1:5000/api/appointments', {
+    id_patient,
+    date_rendez_vous,
+    heure,
+    id_nutritionniste
+  });
+}
+  modifierPatient(data: any): Observable<any> {
+    return this.http.post('http://127.0.0.1:5000/updateProfile', data);
+  }
+
+  ajouterPatientSimple(nom: string, prenom: string, email: string, telephone: string): Observable<any> {
+    return this.http.post('http://127.0.0.1:5000/api/patient/simple', { nom, prenom, email, telephone });
+  }
+
+  ajouterpatient(nom: string, prenom: string, ddn: string, sexe: string, email: string, password: string, telephone: string, adresse: string, allergie: string, maladie_chronique: string, objectif: string, ddc: string): Observable<any> {
     return this.http.post(`http://127.0.0.1:5000/createPatient`, {
-      nom, prenom, ddn, sexe, email, password, telephone, adresse, taille, allergie, maladie_chronique, objectif, ddc
+      nom, prenom, ddn, sexe, email, password, telephone, adresse, allergie, maladie_chronique, objectif, ddc
     });
   }
   getPatient(chercher:string){

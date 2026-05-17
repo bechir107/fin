@@ -12,7 +12,7 @@
         <p class="kpi-label">Patients Totaux</p>
       </div>
     </div>
-    <div class="kpi-card">
+    <div class="kpi-card" [routerLink]="['/dashboard/rdv']" style="cursor: pointer;">
       <div class="kpi-icon">📅</div>
       <div class="kpi-info">
         <p class="kpi-val">{{ monthlyRdv }}</p>
@@ -64,5 +64,9 @@
         <canvas #ageChart></canvas>
       </div>
     </div>
+  </div>
+
+  <div class="rdv-section">
+    <app-rdv-nut [isMiniView]="true"></app-rdv-nut>
   </div>
 </div>

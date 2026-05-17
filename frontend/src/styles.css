@@ -1,5 +1,33 @@
+/* Angular Material Prebuilt Theme */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+@import './custom-theme.scss';
+
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
-/* NUTRIUM Theme Variables (Global) */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+:root {
+  --bg-page:        #f0f5f0;
+  --bg-sidebar:     #1a2920;
+  --bg-card:        #ffffff;
+  --green-primary:  #3d7a4e;
+  --green-light:    #6bb87e;
+  --green-mint:     #d4ead8;
+  --orange-accent:  #e88c2e;
+  --text-dark:      #1a2920;
+  --text-body:      #3d4f43;
+  --text-muted:     #7a9481;
+  --border:         #e2ede4;
+  --font-display:   'Playfair Display', Georgia, serif;
+  --font-body:      'DM Sans', sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-page);
+  color: var(--text-body);
+  margin: 0;
+}
 :root {
   /* Core Colors */
   --green-deep: #1a2e1c;
